@@ -48,7 +48,9 @@
   .row{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:13px 16px;
     border-bottom:1px solid var(--line);text-align:left;background:#fff;font-size:16px;}
   .row:active{background:var(--bg2);}
-  .row .ic{width:34px;height:34px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none;}
+  .row .ic{width:36px;height:36px;border-radius:10px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none;}
+  .row .ic svg{width:24px;height:24px;display:block;}
+  .nextev .ic svg{width:26px;height:26px;display:block;}
   .row .txt{flex:1;line-height:1.5;}
   .row .sub{display:block;font-size:12px;color:var(--sub);margin-top:2px;}
   .row .side{font-size:13px;color:var(--sub);flex:none;}
@@ -125,6 +127,10 @@
   .poster .confetti{position:absolute;border-radius:50%;opacity:.5;}
   .poster .body{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;width:100%;padding:14% 9% 16%;}
   .poster .p-emoji{font-size:42px;}
+  .poster .p-icon svg{width:64px;height:64px;filter:drop-shadow(0 2px 0 rgba(255,255,255,.5));}
+  .loadbubble{width:124px;height:124px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;}
+  .donehead{position:relative;}
+  .dcf{position:absolute;border-radius:50%;opacity:.75;}
   .poster h3{font-size:34px;font-weight:900;line-height:1.25;letter-spacing:2px;margin-top:6px;}
   .poster .p-datebox{margin-top:14px;background:rgba(255,255,255,.92);border-radius:14px;padding:9px 20px;box-shadow:0 3px 8px rgba(0,0,0,.08);}
   .poster .p-date{font-size:16px;font-weight:900;}
@@ -300,6 +306,34 @@ const P=document.getElementById("phone");
 const GEAR=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5c.04-.5.04-2.5 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2h-4l-.4 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.4-1-2 3.4 2 1.6c-.04.5-.04 2.5 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5L10 22h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg>`;
 
 /* ============ nav ============ */
+/* 行事ピクトグラム(描き起こし)。絵文字をアイコンに使わない */
+function evIcon(k){
+  const s = {
+  undoukai:`<path d="M3 9 Q18 15 33 9" stroke="#b98d4e" stroke-width="2" fill="none"/>
+    <path d="M6 9.5 L14 10.5 L9.5 18 Z" fill="#f2762e"/>
+    <path d="M15 11 L23 11 L19 19 Z" fill="#6fa8dc"/>
+    <path d="M24 10.5 L32 9.5 L27.5 17 Z" fill="#f2b84b"/>
+    <circle cx="12" cy="27" r="4" fill="#fff" stroke="#e05c6e" stroke-width="2"/>
+    <circle cx="24" cy="27" r="4" fill="#fff" stroke="#6fa8dc" stroke-width="2"/>`,
+  natsumatsuri:`<rect x="14" y="3" width="8" height="3.5" rx="1.7" fill="#8a5a2a"/>
+    <ellipse cx="18" cy="18" rx="10" ry="11.5" fill="#e05c6e"/>
+    <path d="M10.5 11 Q18 13 25.5 11 M8.5 18 Q18 20 27.5 18 M10.5 25 Q18 27 25.5 25" stroke="#c23b50" stroke-width="1.4" fill="none"/>
+    <rect x="14" y="29" width="8" height="3.5" rx="1.7" fill="#8a5a2a"/>
+    <path d="M26 6 l1 2.2 2.2 1 -2.2 1 -1 2.2 -1-2.2 -2.2-1 2.2-1 Z" fill="#f2b84b"/>`,
+  happyoukai:`<circle cx="12.5" cy="26" r="4.5" fill="#8e6fd8"/>
+    <rect x="15.5" y="8" width="3" height="18" rx="1.5" fill="#8e6fd8"/>
+    <path d="M15.5 8 q8 -2.5 10.5 3.5 q-6.5 -2 -10.5 0 Z" fill="#8e6fd8"/>
+    <path d="M28 13 l1.2 2.8 2.8 1.2 -2.8 1.2 -1.2 2.8 -1.2 -2.8 -2.8 -1.2 2.8 -1.2 Z" fill="#f2b84b"/>
+    <path d="M27 24 l.8 1.8 1.8 .8 -1.8 .8 -.8 1.8 -.8 -1.8 -1.8 -.8 1.8 -.8 Z" fill="#f5a8c0"/>`,
+  sotsuen:`<g fill="#f5a8c0">
+    <ellipse cx="18" cy="9.5" rx="4.2" ry="5.6"/>
+    <ellipse cx="26.1" cy="15.4" rx="4.2" ry="5.6" transform="rotate(72 26.1 15.4)"/>
+    <ellipse cx="23" cy="24.9" rx="4.2" ry="5.6" transform="rotate(144 23 24.9)"/>
+    <ellipse cx="13" cy="24.9" rx="4.2" ry="5.6" transform="rotate(216 13 24.9)"/>
+    <ellipse cx="9.9" cy="15.4" rx="4.2" ry="5.6" transform="rotate(288 9.9 15.4)"/></g>
+    <circle cx="18" cy="18" r="3.4" fill="#f2b84b"/>`};
+  return `<svg viewBox="0 0 36 36" fill="none" aria-hidden="true">${s[k]||""}</svg>`;
+}
 function bako(size){ return `<svg class="mascot" width="${size}" height="${size}" viewBox="0 0 64 64" fill="none" aria-hidden="true">
   <rect x="21" y="8" width="22" height="12" rx="2" fill="#ffffff" stroke="#e0d5c5" stroke-width="1.5"/>
   <line x1="24" y1="12" x2="40" y2="12" stroke="#e0d5c5" stroke-width="1.2"/>
@@ -333,8 +367,8 @@ function nextEvent(){
   const e=list[0];
   const days=Math.round((new Date(e.date+"T00:00:00")-t)/86400000);
   return `<div class="slabel">つぎの行事</div>
-  <button class="nextev" onclick="resume(${e.id})">
-    <span class="ic" style="background:${EV[e.type].soft};width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px">${EV[e.type].emoji}</span>
+  <button class="nextev" style="background:linear-gradient(120deg,${EV[e.type].soft},#ffffff 75%)" onclick="resume(${e.id})">
+    <span class="ic" style="background:#fff;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.06)">${evIcon(e.type)}</span>
     <span><span class="nm">${EV[e.type].name}</span>
       <span class="dt" style="display:block">${jpDate(e.date)}・おたより${e.status==="approved"?"済":"作りかけ"}</span></span>
     <span class="cnt">${days===0?`<span class="n">きょう</span>`:`<span class="a">あと</span><span class="n">${days}</span><span class="a">日</span>`}</span>
@@ -354,12 +388,12 @@ function home(){
       <div class="m">はじめてのおたよりを、5分で作ってみましょう。<br>去年の資料があると、もっと園らしくなります。</div></div>`:""}
     ${making.length?`<div class="slabel">つくりかけ</div><div class="rows">
       ${making.map(e=>`<button class="row" onclick="resume(${e.id})">
-        <span class="ic" style="${e.type?`background:${EV[e.type].soft}`:""}">${e.type?EV[e.type].emoji:"✎"}</span>
+        <span class="ic" style="${e.type?`background:${EV[e.type].soft}`:""}">${e.type?evIcon(e.type):"✎"}</span>
         <span class="txt">${e.type?EV[e.type].name:"新しいおたより"}<span class="sub">${e.status==="review"?"園長先生の確認まち":"つづきから作れます"}</span></span>
         <span class="chev">›</span></button>`).join("")}</div>`:""}
     ${done.length?`<div class="slabel">できあがり</div><div class="rows">
       ${done.map(e=>`<button class="row" onclick="resume(${e.id})">
-        <span class="ic" style="background:${EV[e.type].soft}">${EV[e.type].emoji}</span>
+        <span class="ic" style="background:${EV[e.type].soft}">${evIcon(e.type)}</span>
         <span class="txt">${EV[e.type].name}<span class="sub">${jpDate(e.date)}</span></span>
         <span class="stamp stamp-sm">済</span><span class="chev">›</span></button>`).join("")}</div>`:""}
   </div>`;
@@ -382,7 +416,7 @@ function pick(){
   <div class="screen"><div style="height:8px"></div><div class="rows">
     ${Object.entries(EV).map(([k,d])=>`
       <button class="row ${cur.type===k?"sel":""}" onclick="cur.type='${k}';go('when')">
-        <span class="ic" style="background:${d.soft}">${d.emoji}</span><span class="txt">${d.name}</span><span class="chev">›</span></button>`).join("")}
+        <span class="ic" style="background:${d.soft}">${evIcon(k)}</span><span class="txt">${d.name}</span><span class="chev">›</span></button>`).join("")}
   </div></div>`;
 }
 function when(){
@@ -425,7 +459,7 @@ function making(){
   const n=matCount(cur.type);
   P.innerHTML=`${bar({title:d.name})}
   <div class="screen"><div class="loading">
-    ${bako(72)}
+    <div class="loadbubble">${bako(76)}</div>
     <div class="msg" id="loadMsg">${n?`去年の資料（${n}枚）を確認しています`:`去年の${d.name}の資料を確認しています`}</div>
   </div></div>`;
   setTimeout(()=>{ const m=document.getElementById("loadMsg"); if(m)m.textContent="今年の日付に直しています"; },800);
@@ -523,7 +557,7 @@ function posterHtml(){
     ${garlandSvg(d.flags)}${confettiDots(d.conf)}
     ${frames}
     <div class="body" style="${cur.photos>0?"padding-top:2%":""}">
-      <div class="p-emoji">${d.emoji}</div>
+      <div class="p-icon">${evIcon(cur.type)}</div>
       <h3 style="${dark?"color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.15);":`color:${d.accent};text-shadow:0 3px 0 rgba(255,255,255,.7);`}">${d.name}</h3>
       <div class="p-datebox"><div class="p-date" style="color:${d.accent}">${jpDate(cur.date)}</div>
         <div class="p-time">${cur.time} スタート</div></div>
@@ -580,7 +614,10 @@ function showDone(){
   const mins=cur.minutes||1;
   P.innerHTML=`${bar({back:"home()", title:"できあがり"})}
   <div class="screen">
-    <div class="donehead"><div class="stamp stamp-lg stamped" style="margin:0 auto">済</div>
+    <div class="donehead">
+      ${[["18%","22%","#f2b84b",8],["30%","8%","#6fa8dc",6],["68%","10%","#f5a8c0",7],["80%","26%","#7fd8be",6],["24%","58%","#f5a8c0",5],["74%","56%","#f2b84b",5]]
+        .map(([l,t,c,s])=>`<span class="dcf" style="left:${l};top:${t};width:${s}px;height:${s}px;background:${c}"></span>`).join("")}
+      <div class="stamp stamp-lg stamped" style="margin:0 auto">済</div>
       <div class="t">おたよりとポスターができました</div>
       <div class="time">かかった時間 ${mins}分（手作業なら2時間ほど）</div></div>
     <div class="slabel">印刷</div>
