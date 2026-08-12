@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ぎょうじばこ（仮）- 行事準備が本当に終わるAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#ffd6e0; --pink-deep:#ff8fab; --cream:#fff8ef; --mint:#d4f0e0; --mint-deep:#5fbf8f;
+    --sky:#d6ecff; --sky-deep:#6fa8dc; --sun:#ffe9b3; --sun-deep:#f2b84b;
+    --ink:#4a3f35; --ink-soft:#8a7b6e; --card:#ffffff; --line:#f0e4d8;
+    --danger:#e26d5c; --radius:18px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;}
+  body{background:var(--cream);color:var(--ink);min-height:100vh;}
+  button{cursor:pointer;border:none;font-family:inherit;}
+
+  /* ---------- layout ---------- */
+  .app{display:flex;min-height:100vh;}
+  .sidebar{width:220px;background:#fff;border-right:2px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;}
+  .logo{font-weight:900;font-size:20px;padding:6px 10px 16px;letter-spacing:1px;}
+  .logo small{display:block;font-size:10px;color:var(--ink-soft);font-weight:500;letter-spacing:0;}
+  .nav-btn{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;background:transparent;font-size:14px;font-weight:700;color:var(--ink-soft);text-align:left;transition:.15s;}
+  .nav-btn:hover{background:var(--cream);}
+  .nav-btn.active{background:var(--pink);color:var(--ink);}
+  .nav-note{margin-top:auto;font-size:11px;color:var(--ink-soft);background:var(--cream);border-radius:12px;padding:10px;line-height:1.6;}
+  .main{flex:1;padding:26px 34px;max-width:1060px;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  .topbar h1{font-size:22px;font-weight:900;}
+  .topbar .en-name{font-size:12px;color:var(--ink-soft);font-weight:500;}
+  .role-switch{display:flex;background:#fff;border:2px solid var(--line);border-radius:999px;padding:3px;}
+  .role-switch button{padding:7px 16px;border-radius:999px;font-size:13px;font-weight:700;background:transparent;color:var(--ink-soft);}
+  .role-switch button.on{background:var(--sun);color:var(--ink);}
+
+  .card{background:var(--card);border:2px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px;}
+  .card h2{font-size:16px;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .muted{color:var(--ink-soft);font-size:13px;line-height:1.7;}
+
+  /* ---------- home ---------- */
+  .today-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+  .event-card{border:2px solid var(--line);border-radius:var(--radius);padding:18px;background:#fff;text-align:left;transition:.15s;position:relative;}
+  .event-card:hover{transform:translateY(-3px);border-color:var(--pink-deep);}
+  .event-card .emoji{font-size:34px;}
+  .event-card .name{font-weight:900;font-size:17px;margin-top:6px;}
+  .event-card .date{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;margin-top:8px;}
+  .b-draft{background:var(--sky);} .b-review{background:var(--sun);} .b-ok{background:var(--mint);} .b-none{background:#f3ede6;color:var(--ink-soft);}
+  .todo-item{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px dashed var(--line);font-size:14px;}
+  .todo-item:last-child{border-bottom:none;}
+  .todo-item .go{margin-left:auto;background:var(--pink);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;}
+
+  /* ---------- textbook ---------- */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid .wide{grid-column:1/-1;}
+  label.f{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;}
+  input[type=text],input[type=date],input[type=time],select,textarea{width:100%;padding:10px 12px;border:2px solid var(--line);border-radius:12px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);}
+  textarea{resize:vertical;min-height:70px;line-height:1.7;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pink-deep);}
+  .color-row{display:flex;gap:8px;}
+  .color-dot{width:34px;height:34px;border-radius:50%;border:3px solid transparent;}
+  .color-dot.sel{border-color:var(--ink);}
+  .btn{padding:11px 22px;border-radius:999px;font-size:14px;font-weight:900;transition:.15s;}
+  .btn-main{background:linear-gradient(135deg,var(--pink-deep),#ffb347);color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.08);}
+  .btn-main:hover{transform:translateY(-2px);}
+  .btn-sub{background:#fff;border:2px solid var(--line);color:var(--ink);}
+  .btn-ghost{background:var(--cream);color:var(--ink-soft);font-weight:700;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+
+  /* ---------- wizard ---------- */
+  .steps{display:flex;gap:8px;margin-bottom:18px;}
+  .step{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--ink-soft);padding:8px;border-radius:10px;background:#fff;border:2px solid var(--line);}
+  .step.on{background:var(--pink);color:var(--ink);border-color:var(--pink);}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{padding:9px 18px;border-radius:999px;border:2px solid var(--line);background:#fff;font-size:14px;font-weight:700;color:var(--ink-soft);}
+  .chip.sel{background:var(--mint);border-color:var(--mint-deep);color:var(--ink);}
+
+  /* ---------- generation ---------- */
+  .thinking{display:flex;flex-direction:column;align-items:center;padding:50px 0;gap:14px;}
+  .dots span{display:inline-block;width:12px;height:12px;margin:0 4px;border-radius:50%;background:var(--pink-deep);animation:bob 1s infinite;}
+  .dots span:nth-child(2){animation-delay:.15s;background:var(--sun-deep);}
+  .dots span:nth-child(3){animation-delay:.3s;background:var(--mint-deep);}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+  .result-grid{display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start;}
+  @media(max-width:900px){.result-grid{grid-template-columns:1fr;}}
+  .letter-paper{background:#fffdf8;border:2px solid var(--line);border-radius:12px;padding:26px;line-height:2;font-size:14px;white-space:pre-wrap;}
+  .check-row{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;font-weight:700;}
+  .check-ok{color:var(--mint-deep);} .check-ng{color:var(--danger);}
+
+  /* ---------- poster ---------- */
+  .poster{width:100%;aspect-ratio:210/297;border-radius:12px;overflow:hidden;position:relative;box-shadow:0 8px 24px rgba(0,0,0,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8%;}
+  .poster .deco{position:absolute;font-size:38px;opacity:.85;}
+  .poster h3{font-size:34px;font-weight:900;line-height:1.3;text-shadow:0 2px 0 rgba(255,255,255,.6);}
+  .poster .p-date{font-size:16px;font-weight:900;margin-top:12px;background:rgba(255,255,255,.75);padding:6px 18px;border-radius:999px;}
+  .poster .p-place{font-size:13px;font-weight:700;margin-top:8px;}
+  .poster .p-en{font-size:11px;letter-spacing:3px;margin-top:4px;opacity:.6;}
+  .poster .p-garden{position:absolute;bottom:5%;font-size:13px;font-weight:900;background:rgba(255,255,255,.8);padding:5px 16px;border-radius:999px;}
+  .photo-frames{position:absolute;top:6%;left:0;right:0;display:flex;justify-content:center;gap:10px;}
+  .photo-frame{width:64px;height:64px;border-radius:14px;background:rgba(255,255,255,.65);border:2px dashed rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:24px;}
+
+  /* ---------- approval ---------- */
+  .approval-box{border:2px dashed var(--line);border-radius:12px;padding:14px;margin-top:14px;}
+  .comment{background:var(--cream);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:8px;}
+  .comment b{font-size:12px;color:var(--ink-soft);display:block;}
+
+  /* ---------- report ---------- */
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+  .stat{background:#fff;border:2px solid var(--line);border-radius:var(--radius);padding:18px;text-align:center;}
+  .stat .num{font-size:30px;font-weight:900;}
+  .stat .lbl{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;}
+  th{font-size:11px;color:var(--ink-soft);}
+
+  .toast{position:fixed;bottom:26px;right:26px;background:var(--ink);color:#fff;padding:13px 22px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;transition:.3s;pointer-events:none;z-index:99;}
+  .toast.show{opacity:1;}
+  .timer-pill{position:fixed;bottom:26px;left:250px;background:#fff;border:2px solid var(--line);border-radius:999px;padding:8px 18px;font-size:13px;font-weight:700;color:var(--ink-soft);display:none;z-index:99;}
+
+  /* ---------- print ---------- */
+  @media print{
+    body *{visibility:hidden;}
+    #printArea,#printArea *{visibility:visible;}
+    #printArea{position:absolute;inset:0;padding:0;}
+    #printArea .poster{box-shadow:none;border-radius:0;width:100%;height:100vh;}
+    #printArea .letter-paper{border:none;font-size:16px;}
+  }
+  #printArea{display:none;}
+  @media print{#printArea{display:block;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="logo">🎪 ぎょうじばこ<small>（仮称）行事準備が本当に終わるAI</small></div>
+    <button class="nav-btn active" data-view="home" onclick="nav('home')">🏠 今日やること</button>
+    <button class="nav-btn" data-view="events" onclick="nav('events')">🎨 行事から作る</button>
+    <button class="nav-btn" data-view="textbook" onclick="nav('textbook')">📚 園の教科書</button>
+    <button class="nav-btn" data-view="report" onclick="nav('report')">⏱ 効果レポート</button>
+    <div class="nav-note">保育士資格を持つ開発者が作っています。園児のお写真はAIには送られません 🔒</div>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="pageTitle">今日やること</h1>
+        <div class="en-name" id="gardenNameTop">はじめに「園の教科書」を登録しましょう</div>
+      </div>
+      <div class="role-switch">
+        <button id="roleStaff" class="on" onclick="setRole('staff')">👩‍🏫 わかば先生</button>
+        <button id="roleHead" onclick="setRole('head')">👑 園長先生</button>
+      </div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="timer-pill" id="timerPill">⏱ 作業時間 <span id="timerVal">0:00</span></div>
+<div id="printArea"></div>
+
+<script>
+/* ================= data ================= */
+const EVENT_DEFS = {
+  undoukai:{name:"運動会", emoji:"🏃", en:"SPORTS DAY", bg:"linear-gradient(160deg,#d6ecff,#fff3c4)", deco:["🚩","☀️","🎌","⭐"], season:"秋"},
+  natsumatsuri:{name:"夏祭り", emoji:"🏮", en:"SUMMER FESTIVAL", bg:"linear-gradient(160deg,#ffe3ec,#fff0c9)", deco:["🎆","🍧","🏮","🎐"], season:"夏"},
+  happyoukai:{name:"発表会", emoji:"🎭", en:"CONCERT", bg:"linear-gradient(160deg,#e8e0ff,#ffe9f2)", deco:["🎵","⭐","🎹","🎀"], season:"冬"},
+  sotsuen:{name:"卒園式", emoji:"🌸", en:"GRADUATION", bg:"linear-gradient(160deg,#ffe9f0,#e7f6ea)", deco:["🌸","🎓","💐","🕊️"], season:"春"}
+};
+const MOODS = {teinei:"きちんと", attaka:"あたたかく", wakuwaku:"わくわく"};
+const ARTIFACTS = ["保護者への案内文","A4ポスター"];
+const DEFAULT_STATE = {
+  textbook:{garden:"",address:"",tel:"",classes:"ひよこ・りす・ぱんだ",
+    principle:"のびのびと、じぶんらしく。",tone:"attaka",
+    ng:"必ず,絶対,がんばれ",color:"#ff8fab",photoRule:"顔がはっきり写る写真は保護者の同意済みのものだけ使う"},
+  events:[], logs:[], seq:1
+};
+let S = load();
+let role = "staff";
+let cur = null;           // current event being edited
+let timerStart = null, timerInt = null;
+
+function load(){ try{ const d=JSON.parse(localStorage.getItem("gyoujibako")); if(d&&d.textbook) return d; }catch(e){} return JSON.parse(JSON.stringify(DEFAULT_STATE)); }
+function save(){ localStorage.setItem("gyoujibako", JSON.stringify(S)); }
+function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2400); }
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ================= role / nav ================= */
+function setRole(r){ role=r;
+  document.getElementById("roleStaff").classList.toggle("on",r==="staff");
+  document.getElementById("roleHead").classList.toggle("on",r==="head");
+  if(cur) renderResult(); else nav(curView);
+}
+let curView = "home";
+function nav(v){ curView=v; cur=null; stopTimer(false);
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===v));
+  document.getElementById("gardenNameTop").textContent = S.textbook.garden ? S.textbook.garden : "はじめに「園の教科書」を登録しましょう";
+  const titles={home:"今日やること",events:"行事から作る",textbook:"園の教科書",report:"効果レポート"};
+  document.getElementById("pageTitle").textContent=titles[v];
+  ({home:renderHome,events:renderEvents,textbook:renderTextbook,report:renderReport})[v]();
+}
+
+/* ================= home ================= */
+function renderHome(){
+  const v=document.getElementById("view");
+  const drafts=S.events.filter(e=>e.status!=="approved");
+  const nextTodo = drafts.length
+    ? drafts.map(e=>`<div class="todo-item">${EVENT_DEFS[e.type].emoji} <b>${EVENT_DEFS[e.type].name}</b>（${e.date||"日付未定"}）… ${statusLabel(e.status)}
+        <button class="go" onclick="openEvent(${e.id})">つづきをする</button></div>`).join("")
+    : `<div class="muted">いま作りかけの行事はありません。下から新しく作れます 🌱</div>`;
+  v.innerHTML = `
+    ${S.textbook.garden? "" : `<div class="card" style="background:var(--sun);border-color:var(--sun-deep)">
+      <h2>🌟 さいしょの一歩</h2>
+      <div class="muted" style="color:var(--ink)">まず「園の教科書」を登録しましょう。AIが園らしい文章を作れるようになります。<b>おためし登録は1分</b>で終わります。</div>
+      <div style="margin-top:12px"><button class="btn btn-main" onclick="nav('textbook')">園の教科書をひらく</button></div></div>`}
+    <div class="card"><h2>📌 作りかけ・確認まち</h2>${nextTodo}</div>
+    <div class="card"><h2>🎪 行事から作る</h2><div class="today-grid">${eventCards()}</div></div>`;
+}
+function statusLabel(s){ return {draft:'<span class="badge b-draft">下書き</span>',review:'<span class="badge b-review">園長確認まち</span>',approved:'<span class="badge b-ok">承認ずみ ✓</span>'}[s]||""; }
+function eventCards(){
+  return Object.entries(EVENT_DEFS).map(([k,d])=>{
+    const done=S.events.find(e=>e.type===k&&e.status==="approved");
+    return `<button class="event-card" onclick="startWizard('${k}')">
+      <div class="emoji">${d.emoji}</div><div class="name">${d.name}</div>
+      <div class="date">${d.season}の行事</div>
+      ${done?'<span class="badge b-ok">今年ぶんは承認ずみ</span>':'<span class="badge b-none">去年の資料から作れます</span>'}</button>`;
+  }).join("");
+}
+function renderEvents(){ document.getElementById("view").innerHTML=`<div class="card"><h2>🎪 どの行事を作りますか？</h2><div class="today-grid">${eventCards()}</div></div>`; }
+
+/* ================= textbook ================= */
+function renderTextbook(){
+  const t=S.textbook;
+  document.getElementById("view").innerHTML=`
+  <div class="card">
+    <h2>📚 園の教科書 <span class="muted" style="font-weight:500">— 一度登録すれば、あとはAIがずっと覚えています</span></h2>
+    <div style="margin-bottom:14px"><button class="btn btn-sub" onclick="sampleFill()">🪄 前年資料から自動登録（おためしデータ）</button></div>
+    <div class="form-grid">
+      <div><label class="f">園の名前</label><input type="text" id="tb_garden" value="${esc(t.garden)}" placeholder="例：ひまわり保育園"></div>
+      <div><label class="f">クラス名（・区切り）</label><input type="text" id="tb_classes" value="${esc(t.classes)}"></div>
+      <div class="wide"><label class="f">保育理念・大切にしていること</label><textarea id="tb_principle">${esc(t.principle)}</textarea></div>
+      <div><label class="f">保護者への言葉づかい</label>
+        <select id="tb_tone">${Object.entries(MOODS).map(([k,v])=>`<option value="${k}" ${t.tone===k?"selected":""}>${v}した文章</option>`).join("")}</select></div>
+      <div><label class="f">使わない言葉（, 区切り）</label><input type="text" id="tb_ng" value="${esc(t.ng)}"></div>
+      <div class="wide"><label class="f">園のテーマカラー</label><div class="color-row" id="colorRow">
+        ${["#ff8fab","#f2b84b","#5fbf8f","#6fa8dc","#b39ddb"].map(c=>`<button class="color-dot ${t.color===c?"sel":""}" style="background:${c}" onclick="pickColor('${c}')"></button>`).join("")}</div></div>
+      <div class="wide"><label class="f">園児写真のルール</label><textarea id="tb_photo">${esc(t.photoRule)}</textarea></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:10px">
+      <button class="btn btn-main" onclick="saveTextbook()">保存する</button>
+      <span class="muted" style="align-self:center">🔒 ここの情報は園の中だけで使われます</span>
+    </div>
+  </div>`;
+}
+function pickColor(c){ S.textbook.color=c; document.querySelectorAll(".color-dot").forEach(d=>d.classList.toggle("sel",d.style.background&&rgb2hex(d.style.background)===c)); }
+function rgb2hex(rgb){ const m=rgb.match(/\d+/g); return m?"#"+m.slice(0,3).map(x=>(+x).toString(16).padStart(2,"0")).join(""):rgb; }
+function sampleFill(){
+  Object.assign(S.textbook,{garden:"ひまわり保育園",classes:"ひよこ・りす・ぱんだ",
+    principle:"のびのびと、じぶんらしく。子どもの「やってみたい」を大切にします。",
+    tone:"attaka",ng:"必ず,絶対,がんばれ",color:"#ff8fab",
+    photoRule:"顔がはっきり写る写真は保護者の同意済みのものだけ使う"});
+  save(); renderTextbook(); toast("前年資料から園の情報を読み取りました 🪄");
+}
+function saveTextbook(){
+  const g=id=>document.getElementById(id).value;
+  Object.assign(S.textbook,{garden:g("tb_garden"),classes:g("tb_classes"),principle:g("tb_principle"),
+    tone:g("tb_tone"),ng:g("tb_ng"),photoRule:g("tb_photo")});
+  save(); toast("園の教科書を保存しました 📚"); nav("home");
+}
+
+/* ================= wizard ================= */
+function startWizard(type){
+  if(!S.textbook.garden){ toast("先に園の教科書を登録してください 📚"); nav("textbook"); return; }
+  cur={id:S.seq++, type, date:"", time:"10:00", place:"園庭", mood:S.textbook.tone, photos:2,
+       status:"draft", letter:"", comments:[], minutes:0, createdAt:new Date().toLocaleDateString("ja-JP")};
+  startTimer(); renderWizard();
+}
+function openEvent(id){ cur=S.events.find(e=>e.id===id); if(!cur)return; startTimer(); renderResult(); }
+function renderWizard(){
+  const d=EVENT_DEFS[cur.type];
+  document.getElementById("pageTitle").textContent=d.name+"を作る";
+  document.getElementById("view").innerHTML=`
+  <div class="steps"><div class="step on">1. きほんを選ぶ</div><div class="step">2. AIが下書き</div><div class="step">3. 確認・承認</div><div class="step">4. 完成 🎉</div></div>
+  <div class="card">
+    <h2>${d.emoji} ${d.name}のきほん情報 <span class="muted" style="font-weight:500">— 選ぶだけでOK。文章は書かなくて大丈夫</span></h2>
+    <div class="form-grid">
+      <div><label class="f">開催日</label><input type="date" id="w_date" value="${cur.date}"></div>
+      <div><label class="f">開始時間</label><input type="time" id="w_time" value="${cur.time}"></div>
+      <div><label class="f">場所</label><input type="text" id="w_place" value="${esc(cur.place)}"></div>
+      <div><label class="f">写真わく（園児のお写真を入れる場所）</label>
+        <select id="w_photos"><option value="0">なし</option><option value="2" ${cur.photos==2?"selected":""}>2つ</option><option value="3" ${cur.photos==3?"selected":""}>3つ</option></select></div>
+      <div class="wide"><label class="f">ふんいき</label><div class="chips" id="moodChips">
+        ${Object.entries(MOODS).map(([k,v])=>`<button class="chip ${cur.mood===k?"sel":""}" onclick="cur.mood='${k}';renderWizard()">${v}</button>`).join("")}</div></div>
+      <div class="wide"><label class="f">作るもの</label><div class="chips">${ARTIFACTS.map(a=>`<span class="chip sel">${a}</span>`).join("")}<span class="chip">プログラム表紙（正式版で）</span></div></div>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:10px;align-items:center">
+      <button class="btn btn-main" onclick="generate()">🪄 AIに下書きしてもらう</button>
+      <span class="muted">去年の${d.name}の資料と園の教科書をもとに作ります</span>
+    </div>
+  </div>`;
+  document.getElementById("w_date").onchange=e=>cur.date=e.target.value;
+  document.getElementById("w_time").onchange=e=>cur.time=e.target.value;
+  document.getElementById("w_place").onchange=e=>cur.place=e.target.value;
+  document.getElementById("w_photos").onchange=e=>cur.photos=+e.target.value;
+}
+
+/* ================= pseudo-AI generation ================= */
+function jpDate(iso){ if(!iso)return "";
+  const dt=new Date(iso+"T00:00:00"); const w="日月火水木金土"[dt.getDay()];
+  return `${dt.getFullYear()}年${dt.getMonth()+1}月${dt.getDate()}日（${w}）`; }
+function generate(){
+  if(!cur.date){ toast("開催日を選んでください 📅"); return; }
+  const v=document.getElementById("view");
+  v.innerHTML=`<div class="card"><div class="thinking">
+    <div class="dots"><span></span><span></span><span></span></div>
+    <div style="font-weight:900">AIが${S.textbook.garden}らしい下書きを作っています…</div>
+    <div class="muted">去年の資料 → 今年の日付にお直し中 🗓️</div></div></div>`;
+  setTimeout(()=>{ cur.letter=buildLetter(); if(!S.events.find(e=>e.id===cur.id)) S.events.push(cur);
+    cur.status="draft"; save(); renderResult(); },1600);
+}
+function buildLetter(){
+  const t=S.textbook, d=EVENT_DEFS[cur.type];
+  const seasonGreet={
+    undoukai:"秋晴れが気持ちよい季節になりました",
+    natsumatsuri:"せみの声がにぎやかな季節になりました",
+    happyoukai:"木々の葉が色づく季節になりました",
+    sotsuen:"春の日ざしがやわらかくなってきました"}[cur.type];
+  const toneOpen={teinei:"日ごろより、園の活動にご協力いただきありがとうございます。",
+    attaka:"いつもあたたかいご協力をありがとうございます。",
+    wakuwaku:"子どもたちは、当日を楽しみにしています！"}[cur.mood];
+  const toneClose={teinei:"お忙しいところ恐れ入りますが、ぜひお越しください。",
+    attaka:"子どもたちの成長した姿を、楽しみにいらしてください。",
+    wakuwaku:"当日は、子どもたちと一緒に楽しんでください！"}[cur.mood];
+  const kids={undoukai:"子どもたちは、かけっこやダンスの練習に元気いっぱいです。",
+    natsumatsuri:"おみこしや盆おどりの練習をしています。お祭りの日が待ちきれない様子です。",
+    happyoukai:"歌や合奏、劇あそびの練習をしています。友だちと力を合わせる楽しさを感じています。",
+    sotsuen:"この一年で、ぐんと大きくなった子どもたち。園で過ごす残りの日々を大切にしています。"}[cur.type];
+  return `保護者の皆様
+
+${seasonGreet}。${toneOpen}
+
+${t.garden}の「${d.name}」を、下記のとおり行います。${kids}
+
+【日時】${jpDate(cur.date)} ${cur.time}〜
+【場所】${cur.place}
+【対象】${t.classes} ぐみ
+
+${toneClose}
+
+${t.garden}
+「${t.principle.split("。")[0]}。」`;
+}
+function runChecks(){
+  const checks=[];
+  checks.push({ok:!!cur.date, label:cur.date?`日付と曜日は合っています ✓（${jpDate(cur.date)}）`:"開催日が入っていません"});
+  const ngs=(S.textbook.ng||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const hit=ngs.filter(w=>cur.letter.includes(w));
+  checks.push({ok:hit.length===0, label:hit.length?`使わない言葉が入っています：${hit.join("、")}`:"園の「使わない言葉」は入っていません ✓"});
+  checks.push({ok:cur.letter.includes(cur.place), label:"場所の書きもれなし ✓"});
+  checks.push({ok:true, label:"園児のお写真はAIに送りません。わくに入れるだけです 🔒"});
+  return checks;
+}
+
+/* ================= result / approval ================= */
+function renderResult(){
+  const d=EVENT_DEFS[cur.type];
+  document.getElementById("pageTitle").textContent=d.name;
+  const stepHtml = cur.status==="approved"
+    ? `<div class="steps"><div class="step">1. きほんを選ぶ</div><div class="step">2. AIが下書き</div><div class="step">3. 確認・承認</div><div class="step on">4. 完成 🎉</div></div>`
+    : `<div class="steps"><div class="step">1. きほんを選ぶ</div><div class="step on">2. AIが下書き</div><div class="step ${cur.status==="review"?"on":""}">3. 確認・承認</div><div class="step">4. 完成 🎉</div></div>`;
+  const checks=runChecks();
+  const actions = buildActions();
+  document.getElementById("view").innerHTML=`
+  ${stepHtml}
+  <div class="result-grid">
+    <div>
+      <div class="card"><h2>💌 保護者への案内文 ${statusLabel(cur.status)}</h2>
+        <div class="letter-paper" id="letterPaper" contenteditable="${cur.status!=="approved"}" oninput="cur.letter=this.innerText">${esc(cur.letter)}</div>
+        <div class="muted" style="margin-top:8px">✏️ 文章は直接さわって直せます（自動保存）</div></div>
+      <div class="card"><h2>🔍 AIが見直しました</h2>
+        ${checks.map(c=>`<div class="check-row ${c.ok?"check-ok":"check-ng"}">${c.ok?"✓":"⚠"} ${c.label}</div>`).join("")}</div>
+      <div class="card"><h2>${cur.status==="approved"?"🎉 完成！":"🤝 確認・承認"}</h2>${actions}</div>
+    </div>
+    <div>
+      <div class="card" style="padding:14px"><h2 style="margin-bottom:10px">🖼 A4ポスター</h2>${posterHtml()}</div>
+    </div>
+  </div>`;
+}
+function buildActions(){
+  const cm=cur.comments.map(c=>`<div class="comment"><b>${c.by}</b>${esc(c.text)}</div>`).join("");
+  if(cur.status==="approved")
+    return `${cm}<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn btn-main" onclick="printOut('letter')">💌 案内文をPDFに</button>
+      <button class="btn btn-main" onclick="printOut('poster')">🖼 ポスターをPDFに</button>
+      <button class="btn btn-ghost" onclick="finish()">とじる</button></div>`;
+  if(role==="staff"){
+    return `${cm}<div class="approval-box">
+      <div class="muted">できあがったら園長先生に確認をお願いしましょう。</div>
+      <div style="margin-top:10px;display:flex;gap:10px">
+        <button class="btn btn-main" ${cur.status==="review"?"disabled":""} onclick="requestReview()">👑 園長先生に確認をお願いする</button>
+        ${cur.status==="review"?'<span class="muted" style="align-self:center">確認をお願いしています…（右上で園長先生に切り替えると承認できます）</span>':""}
+      </div></div>`;
+  }
+  return `${cm}<div class="approval-box">
+    <div class="muted">園長先生モードです。内容を確認してください。</div>
+    <textarea id="headComment" placeholder="コメント（直してほしいところなど）" style="margin-top:10px"></textarea>
+    <div style="margin-top:10px;display:flex;gap:10px">
+      <button class="btn btn-main" onclick="approve()">✅ 承認する</button>
+      <button class="btn btn-sub" onclick="sendBack()">↩ 差しもどす</button>
+    </div></div>`;
+}
+function requestReview(){ cur.status="review"; save(); toast("園長先生に確認をお願いしました 👑"); renderResult(); }
+function approve(){
+  const c=document.getElementById("headComment").value.trim();
+  if(c) cur.comments.push({by:"園長先生",text:c});
+  cur.status="approved"; stopTimer(true); save(); toast("承認されました！🎉"); renderResult(); }
+function sendBack(){
+  const c=document.getElementById("headComment").value.trim()||"もう一度見直してください";
+  cur.comments.push({by:"園長先生",text:c}); cur.status="draft"; save(); toast("差しもどしました ↩"); renderResult(); }
+function finish(){ cur=null; nav("home"); }
+
+/* ================= poster ================= */
+function posterHtml(){
+  const d=EVENT_DEFS[cur.type], t=S.textbook;
+  const decoPos=[["top:18%;left:6%",0],["top:22%;right:7%",1],["bottom:22%;left:8%",2],["bottom:18%;right:6%",3]];
+  const frames = cur.photos>0
+    ? `<div class="photo-frames">${Array(cur.photos).fill(0).map(()=>`<div class="photo-frame">📷</div>`).join("")}</div>`
+    : "";
+  return `<div class="poster" style="background:${d.bg}">
+    ${frames}
+    ${decoPos.map(([pos,i])=>`<div class="deco" style="${pos}">${d.deco[i]}</div>`).join("")}
+    <div style="font-size:44px">${d.emoji}</div>
+    <h3 style="color:${t.color}">${d.name}</h3>
+    <div class="p-en">${d.en}</div>
+    <div class="p-date">${jpDate(cur.date)||"日付をえらんでね"} ${cur.time}〜</div>
+    <div class="p-place">ばしょ：${esc(cur.place)}</div>
+    <div class="p-garden">${esc(t.garden)}</div>
+  </div>`;
+}
+function printOut(kind){
+  const pa=document.getElementById("printArea");
+  pa.innerHTML = kind==="poster" ? posterHtml() : `<div class="letter-paper">${esc(cur.letter)}</div>`;
+  window.print();
+}
+
+/* ================= timer / report ================= */
+function startTimer(){ if(timerInt) return; timerStart=Date.now()-(cur.minutes||0)*60000;
+  document.getElementById("timerPill").style.display="block";
+  timerInt=setInterval(()=>{ const s=Math.floor((Date.now()-timerStart)/1000);
+    document.getElementById("timerVal").textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+    if(cur) cur.minutes=+(s/60).toFixed(1); },1000); }
+function stopTimer(log){ if(timerInt){clearInterval(timerInt);timerInt=null;}
+  document.getElementById("timerPill").style.display="none";
+  if(log&&cur){ S.logs.push({event:EVENT_DEFS[cur.type].name,minutes:Math.max(1,Math.round(cur.minutes)),date:new Date().toLocaleDateString("ja-JP")}); save(); } }
+function renderReport(){
+  const total=S.logs.reduce((a,l)=>a+l.minutes,0);
+  const baseline=S.logs.length*120;   // 手作業想定 120分/行事セット
+  const saved=Math.max(0,baseline-total);
+  document.getElementById("view").innerHTML=`
+  <div class="stat-row">
+    <div class="stat"><div class="num">${S.logs.length}</div><div class="lbl">完成した行事セット</div></div>
+    <div class="stat"><div class="num">${total}分</div><div class="lbl">かかった時間</div></div>
+    <div class="stat"><div class="num" style="color:var(--mint-deep)">${(saved/60).toFixed(1)}時間</div><div class="lbl">手作業（120分/件）よりへった時間</div></div>
+  </div>
+  <div class="card"><h2>📒 作業記録 <span class="muted" style="font-weight:500">— 園長先生への報告や、料金のもとが取れているかの確認に</span></h2>
+    ${S.logs.length? `<table><tr><th>日付</th><th>行事</th><th>作業時間</th></tr>
+      ${S.logs.map(l=>`<tr><td>${l.date}</td><td>${l.event}</td><td>${l.minutes}分</td></tr>`).join("")}</table>`
+      : `<div class="muted">まだ記録がありません。行事をひとつ完成させると、ここに時間が記録されます ⏱</div>`}
+  </div>`;
+}
+
+/* ================= boot ================= */
+nav("home");
+</script>
+</body>
+</html>

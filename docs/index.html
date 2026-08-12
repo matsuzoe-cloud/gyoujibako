@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ぎょうじばこ</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ぎょうじばこ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f7f7f7; --ink:#2f3438; --sub:#8f969c; --line:#e9e9e9;
+    --accent:#e26e88; --accent-bg:#fdf0f3; --blue:#4a90d9; --green:#3fa878;
+    --shu:#d64545; --danger:#d9534f;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;
+    font-family:-apple-system,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;
+    -webkit-tap-highlight-color:transparent;}
+  html,body{background:#ececec;}
+  body{color:var(--ink);font-size:15px;}
+  button{cursor:pointer;border:none;font-family:inherit;color:inherit;background:none;font-size:inherit;}
+
+  .phone{max-width:430px;margin:0 auto;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;position:relative;}
+  .screen{flex:1;padding-bottom:110px;}
+
+  /* ---- app bar ---- */
+  .bar{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;height:52px;padding:0 8px;}
+  .bar .backb{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink);}
+  .bar .title{flex:1;text-align:center;font-size:16px;font-weight:700;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bar .side{width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--sub);font-weight:700;}
+  .bar .gearb{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#8a8a8a;}
+  .bar .gearb svg{width:22px;height:22px;}
+
+  /* ---- sections & rows ---- */
+  .slabel{font-size:12px;font-weight:700;color:var(--sub);padding:20px 16px 8px;}
+  .rows{background:#fff;}
+  .row{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:13px 16px;
+    border-bottom:1px solid var(--line);text-align:left;background:#fff;font-size:16px;}
+  .row:active{background:var(--bg2);}
+  .row .ic{width:34px;height:34px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none;}
+  .row .txt{flex:1;line-height:1.5;}
+  .row .sub{display:block;font-size:12px;color:var(--sub);margin-top:2px;}
+  .row .side{font-size:13px;color:var(--sub);flex:none;}
+  .row .chev{color:#c8c8c8;font-size:17px;flex:none;font-family:sans-serif;}
+  .row.sel{color:var(--accent);}
+  .row .check{color:var(--accent);font-weight:700;flex:none;}
+
+  /* ---- forms ---- */
+  .formwrap{padding:4px 16px;}
+  label.f{display:block;font-size:12px;font-weight:700;color:var(--sub);margin:18px 0 2px;}
+  input[type=date],input[type=text],textarea{width:100%;padding:12px 0;border:none;border-bottom:1px solid var(--line);
+    border-radius:0;font-size:16px;font-family:inherit;background:transparent;color:var(--ink);}
+  textarea{min-height:72px;line-height:1.7;resize:none;}
+  input:focus,textarea:focus{outline:none;border-bottom-color:var(--accent);}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .chip{padding:9px 14px;border-radius:8px;background:var(--bg2);font-size:14px;color:#666;border:1px solid transparent;}
+  .chip.sel{background:var(--accent-bg);color:var(--accent);border-color:var(--accent);font-weight:700;}
+
+  /* ---- buttons ---- */
+  .ctabar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:10;
+    background:rgba(255,255,255,.97);border-top:1px solid var(--line);
+    padding:10px 16px calc(12px + env(safe-area-inset-bottom));}
+  .btn-p{display:block;width:100%;padding:13px;border-radius:8px;background:var(--accent);color:#fff;
+    font-size:15px;font-weight:700;text-align:center;}
+  .btn-p:disabled{background:#d8d8d8;}
+  .btn-p:active{opacity:.85;}
+  .btn-o{display:block;width:100%;padding:13px;border-radius:10px;border:1px solid var(--line);background:#fff;
+    font-size:15px;font-weight:700;text-align:center;color:var(--ink);margin-top:8px;}
+
+  .homehero{padding:18px 16px 6px;}
+
+  /* ---- つぎの行事（ルナルナ型カウントダウン） ---- */
+  .nextev{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);background:#fff;}
+  .nextev .nm{font-size:16px;font-weight:700;}
+  .nextev .dt{font-size:12px;color:var(--sub);margin-top:2px;white-space:nowrap;}
+  .nextev .cnt{margin-left:auto;flex:none;display:flex;align-items:baseline;gap:2px;}
+  .nextev .cnt .n{font-size:22px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1;}
+  .nextev .cnt .a{font-size:12px;color:var(--sub);font-weight:700;}
+
+  /* ---- progress (数字ドット。保育士バンク型) ---- */
+  .stepdots{display:flex;gap:5px;align-items:center;}
+  .stepdots .sd{width:7px;height:7px;border-radius:50%;background:var(--line);}
+  .stepdots .sd.done{background:#f2c0cb;}
+  .stepdots .sd.on{background:var(--accent);}
+
+  /* ---- マスコット「ばこ」 ---- */
+  .mascot{animation:bob 1.7s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .emptyhome{text-align:center;padding:34px 16px 6px;}
+  .emptyhome .m{font-size:13px;color:var(--sub);margin-top:12px;line-height:1.9;}
+
+  /* ---- loading ---- */
+  .loading{display:flex;flex-direction:column;align-items:center;padding:90px 30px;gap:20px;}
+  .spinner{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading .msg{font-size:14px;color:var(--sub);text-align:center;line-height:2;}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* ---- result ---- */
+  .paper{margin:0 16px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:22px 18px;
+    line-height:2;font-size:14px;white-space:pre-wrap;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .editnote{font-size:12px;color:var(--sub);padding:8px 16px 0;}
+  .checkrow{display:flex;gap:8px;padding:9px 16px;font-size:14px;line-height:1.6;color:#555;}
+  .checkrow .m{flex:none;color:var(--accent);font-weight:700;}
+  .checkrow.ng{color:var(--danger);} .checkrow.ng .m{color:var(--danger);}
+
+  /* ---- poster (印刷物の中だけ にぎやか) ---- */
+  .posterbox{padding:0 16px;}
+  .poster{width:100%;aspect-ratio:210/297;border-radius:4px;overflow:hidden;position:relative;
+    box-shadow:0 1px 6px rgba(0,0,0,.12);border:1px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;text-align:center;}
+  .poster *{font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN",sans-serif;}
+  .poster .garland{position:absolute;top:0;left:0;right:0;}
+  .poster .confetti{position:absolute;border-radius:50%;opacity:.5;}
+  .poster .body{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;width:100%;padding:14% 9% 16%;}
+  .poster .p-emoji{font-size:42px;}
+  .poster h3{font-size:34px;font-weight:900;line-height:1.25;letter-spacing:2px;margin-top:6px;}
+  .poster .p-datebox{margin-top:14px;background:rgba(255,255,255,.92);border-radius:14px;padding:9px 20px;box-shadow:0 3px 8px rgba(0,0,0,.08);}
+  .poster .p-date{font-size:16px;font-weight:900;}
+  .poster .p-time{font-size:12px;font-weight:700;color:#8a8078;}
+  .poster .p-place{margin-top:9px;font-size:12px;font-weight:700;background:rgba(255,255,255,.75);padding:4px 14px;border-radius:999px;}
+  .poster .p-garden{position:absolute;bottom:4.5%;left:50%;transform:translateX(-50%);z-index:2;
+    font-size:11px;font-weight:900;background:rgba(255,255,255,.9);padding:5px 16px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.08);white-space:nowrap;}
+  .photo-strip{position:relative;z-index:2;display:flex;justify-content:center;gap:12px;padding-top:12%;}
+  .polaroid{width:60px;height:70px;background:#fff;border-radius:4px;box-shadow:0 3px 8px rgba(0,0,0,.14);
+    padding:4px 4px 12px;}
+  .polaroid .ph{width:100%;height:100%;background:#f1e8dc;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .polaroid:nth-child(1){transform:rotate(-4deg);} .polaroid:nth-child(2){transform:rotate(3deg);} .polaroid:nth-child(3){transform:rotate(-2deg);}
+
+  /* ---- sheet ---- */
+  .sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .15s ease;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .sheet{width:100%;max-width:430px;background:#fff;border-radius:14px 14px 0 0;
+    padding:6px 0 calc(18px + env(safe-area-inset-bottom));animation:sheetUp .22s ease-out both;}
+  @keyframes sheetUp{from{transform:translateY(40%)}to{transform:none}}
+  .sheet .grab{width:36px;height:4px;border-radius:2px;background:#ddd;margin:8px auto 6px;}
+  .sheet .sh{font-weight:700;font-size:15px;padding:8px 16px 6px;}
+
+  /* ---- principal ---- */
+  .p-note{background:#fff8e1;color:#7a6520;font-size:13px;font-weight:700;padding:10px 16px;border-bottom:1px solid #f0e6c8;}
+  .twin{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px;}
+  .okbtn{padding:15px;border-radius:10px;font-size:16px;font-weight:700;color:#fff;background:var(--green);}
+  .fixbtn{padding:15px;border-radius:10px;font-size:16px;font-weight:700;background:#fff;border:1px solid var(--line);}
+  .bigtext .paper{font-size:16px;line-height:2.1;}
+
+  /* ---- done ---- */
+  .donehead{text-align:center;padding:30px 16px 6px;}
+  .donehead .mark{width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;font-size:28px;
+    display:flex;align-items:center;justify-content:center;margin:0 auto;animation:pop .4s ease both;}
+  @keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+  .donehead .t{font-size:17px;font-weight:700;margin-top:12px;}
+  .donehead .time{font-size:13px;color:var(--sub);margin-top:4px;}
+  /* ---- はんこ（承認の言葉） ---- */
+  .stamp{display:inline-flex;align-items:center;justify-content:center;flex:none;
+    border:2px solid var(--shu);color:var(--shu);border-radius:50%;font-weight:700;
+    transform:rotate(-8deg);background:rgba(255,255,255,.85);}
+  .stamp-sm{width:28px;height:28px;font-size:13px;}
+  .stamp-md{width:52px;height:52px;font-size:21px;border-width:2.5px;}
+  .stamp-lg{width:88px;height:88px;font-size:34px;border-width:3px;}
+  .stamped{animation:stampin .3s cubic-bezier(.2,1.5,.4,1) both;}
+  @keyframes stampin{from{transform:rotate(-24deg) scale(1.9);opacity:0}to{transform:rotate(-8deg) scale(1);opacity:1}}
+  .paperwrap{position:relative;}
+  .paperwrap .stamp-md{position:absolute;top:12px;right:26px;z-index:2;}
+  .stampbtn{width:96px;height:96px;border-radius:50%;border:3px solid var(--shu);color:var(--shu);
+    background:#fff;font-size:36px;font-weight:700;display:flex;align-items:center;justify-content:center;
+    transform:rotate(-8deg);box-shadow:0 2px 8px rgba(214,69,69,.18);margin:0 auto;}
+  .stampbtn:active{transform:rotate(-8deg) scale(.9);}
+  .stampcap{text-align:center;font-size:13px;color:var(--sub);margin-top:10px;}
+
+  .npbox{margin:8px 16px 0;border:1px dashed #b9cfe4;border-radius:8px;padding:14px;text-align:center;}
+  .npbox .code{font-size:24px;font-weight:700;letter-spacing:3px;color:var(--blue);font-variant-numeric:tabular-nums;}
+  .npbox .l{font-size:12px;color:var(--sub);}
+
+  .foot{margin-top:36px;padding:0 16px 20px;font-size:12px;line-height:2;color:#b5b5b5;text-align:center;}
+
+  .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(51,51,51,.92);color:#fff;
+    padding:11px 20px;border-radius:8px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:99;white-space:nowrap;}
+  .toast.show{opacity:1;}
+
+  @media print{
+    body *{visibility:hidden;} #printArea,#printArea *{visibility:visible;}
+    #printArea{position:absolute;inset:0;display:block;}
+    #printArea .poster{box-shadow:none;border:none;border-radius:0;height:100vh;}
+    #printArea .paper{box-shadow:none;border:none;font-size:16px;margin:0;}
+    .stamp{display:none;}
+  }
+  #printArea{display:none;}
+</style>
+</head>
+<body>
+<div class="phone" id="phone"></div>
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+/* ============ data ============ */
+const EV = {
+  undoukai:{name:"運動会", emoji:"🏃", accent:"#f2762e", soft:"#eaf4fc",
+    bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
+  natsumatsuri:{name:"夏祭り", emoji:"🏮", accent:"#e05c6e", soft:"#fdeef0",
+    bg:"linear-gradient(165deg,#2c3e6b 0%,#7c5ba6 55%,#ff9d76 100%)", flags:["#ffd66e","#ff8fab","#7fd8be","#ffb347"], conf:["#ffd66e","#ff8fab","#ffffff"]},
+  happyoukai:{name:"発表会", emoji:"🎭", accent:"#8e6fd8", soft:"#f3effc",
+    bg:"linear-gradient(165deg,#e8e0ff 0%,#f6efff 50%,#ffe9f2 100%)", flags:["#8e6fd8","#f76e92","#f2b84b","#6fa8dc"], conf:["#8e6fd8","#f76e92","#f2b84b"]},
+  sotsuen:{name:"卒園式", emoji:"🌸", accent:"#e0699a", soft:"#fdf0f5",
+    bg:"linear-gradient(165deg,#ffe9f0 0%,#fff6f0 55%,#e7f6ea 100%)", flags:["#e0699a","#f2b84b","#7fd8be","#f76e92"], conf:["#f9c8d8","#e0699a","#7fd8be"]}
+};
+const MOODS = {
+  attaka:{label:"あたたかく", ex:"成長した姿を、楽しみにいらしてください"},
+  teinei:{label:"きちんと", ex:"ぜひお越しくださいますよう、お願いいたします"},
+  wakuwaku:{label:"わくわく", ex:"当日は、いっしょに楽しんでください！"}
+};
+const TIMES = ["9:00","9:30","10:00","15:30","16:00"];
+
+let S = load();
+function load(){ try{ const d=JSON.parse(localStorage.getItem("gyoujibako2")); if(d&&d.garden!==undefined) return d; }catch(e){}
+  return {garden:"", classes:"", ng:"必ず,絶対,がんばれ", principle:"", events:[], seq:1, wip:null, materials:{}}; }
+function save(){ localStorage.setItem("gyoujibako2", JSON.stringify(S)); }
+function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200); }
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function jpDate(iso){ if(!iso)return ""; const dt=new Date(iso+"T00:00:00");
+  return `${dt.getMonth()+1}月${dt.getDate()}日（${"日月火水木金土"[dt.getDay()]}）`; }
+
+let cur=null, startedAt=null;
+const P=document.getElementById("phone");
+const GEAR=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5c.04-.5.04-2.5 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2h-4l-.4 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.4-1-2 3.4 2 1.6c-.04.5-.04 2.5 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5L10 22h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg>`;
+
+/* ============ nav ============ */
+function bako(size){ return `<svg class="mascot" width="${size}" height="${size}" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+  <rect x="21" y="8" width="22" height="12" rx="2" fill="#ffffff" stroke="#e0d5c5" stroke-width="1.5"/>
+  <line x1="24" y1="12" x2="40" y2="12" stroke="#e0d5c5" stroke-width="1.2"/>
+  <line x1="24" y1="15" x2="36" y2="15" stroke="#e0d5c5" stroke-width="1.2"/>
+  <rect x="6" y="17" width="52" height="11" rx="5" fill="#f2cd92" stroke="#c1954f" stroke-width="2.2"/>
+  <rect x="10" y="26" width="44" height="30" rx="6" fill="#f2cd92" stroke="#c1954f" stroke-width="2.2"/>
+  <circle cx="25" cy="40" r="2.6" fill="#4a3f35"/><circle cx="39" cy="40" r="2.6" fill="#4a3f35"/>
+  <path d="M29 46 Q32 49 35 46" stroke="#4a3f35" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="19" cy="45" r="2.6" fill="#f0a8a0" opacity=".55"/><circle cx="45" cy="45" r="2.6" fill="#f0a8a0" opacity=".55"/>
+</svg>`; }
+function stepDots(n){ return `<div class="side"><div class="stepdots">
+  ${[1,2,3,4].map(i=>`<span class="sd ${i<n?"done":i===n?"on":""}"></span>`).join("")}</div></div>`; }
+function bar(opts){ // {back, title, right}
+  return `<div class="bar">
+    ${opts.back?`<button class="backb" onclick="${opts.back}">‹</button>`:`<div style="width:44px"></div>`}
+    <div class="title">${opts.title||""}</div>
+    ${opts.right||`<div style="width:44px"></div>`}
+  </div>`; }
+function go(v,arg){
+  if(cur && cur.type && !cur.letter && v!=="settings" && v!=="materials"){ S.wip=cur; save(); }
+  ({home,pick,when,mood,photos,making,result,settings,principal,materials}[v])(arg); }
+function matCount(type){ return ((S.materials||{})[type]||[]).length; }
+function matTotal(){ return Object.values(S.materials||{}).reduce((a,l)=>a+l.length,0); }
+
+/* ============ home ============ */
+function nextEvent(){
+  const t=new Date(); t.setHours(0,0,0,0);
+  const list=S.events.filter(e=>e.date && new Date(e.date+"T00:00:00")>=t)
+    .sort((a,b)=>a.date<b.date?-1:1);
+  if(!list.length) return "";
+  const e=list[0];
+  const days=Math.round((new Date(e.date+"T00:00:00")-t)/86400000);
+  return `<div class="slabel">つぎの行事</div>
+  <button class="nextev" onclick="resume(${e.id})">
+    <span class="ic" style="background:${EV[e.type].soft};width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px">${EV[e.type].emoji}</span>
+    <span><span class="nm">${EV[e.type].name}</span>
+      <span class="dt" style="display:block">${jpDate(e.date)}・おたより${e.status==="approved"?"済":"作りかけ"}</span></span>
+    <span class="cnt">${days===0?`<span class="n">きょう</span>`:`<span class="a">あと</span><span class="n">${days}</span><span class="a">日</span>`}</span>
+  </button>`;
+}
+function home(){
+  cur=null;
+  if(S.wip && !S.wip.type){ S.wip=null; save(); }   // 行事を選ぶ前のゴミは残さない
+  const making=S.events.filter(e=>e.status!=="approved");
+  if(S.wip && !S.events.find(e=>e.id===S.wip.id)) making.unshift(S.wip);
+  const done=S.events.filter(e=>e.status==="approved");
+  P.innerHTML=`${bar({title:"ぎょうじばこ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
+  <div class="screen">
+    ${nextEvent()}
+    <div class="homehero"><button class="btn-p" onclick="startNew()">行事のおたよりをつくる</button></div>
+    ${(!making.length && !done.length)?`<div class="emptyhome">${bako(76)}
+      <div class="m">はじめてのおたよりを、5分で作ってみましょう。<br>去年の資料があると、もっと園らしくなります。</div></div>`:""}
+    ${making.length?`<div class="slabel">つくりかけ</div><div class="rows">
+      ${making.map(e=>`<button class="row" onclick="resume(${e.id})">
+        <span class="ic" style="${e.type?`background:${EV[e.type].soft}`:""}">${e.type?EV[e.type].emoji:"✎"}</span>
+        <span class="txt">${e.type?EV[e.type].name:"新しいおたより"}<span class="sub">${e.status==="review"?"園長先生の確認まち":"つづきから作れます"}</span></span>
+        <span class="chev">›</span></button>`).join("")}</div>`:""}
+    ${done.length?`<div class="slabel">できあがり</div><div class="rows">
+      ${done.map(e=>`<button class="row" onclick="resume(${e.id})">
+        <span class="ic" style="background:${EV[e.type].soft}">${EV[e.type].emoji}</span>
+        <span class="txt">${EV[e.type].name}<span class="sub">${jpDate(e.date)}</span></span>
+        <span class="stamp stamp-sm">済</span><span class="chev">›</span></button>`).join("")}</div>`:""}
+  </div>`;
+}
+function startNew(){
+  if(!S.garden){ go('settings'); toast("さいしょに園の名前を登録してください"); return; }
+  cur={id:S.seq++, type:null, date:"", time:"10:00", mood:"attaka", photos:2,
+       place:"園庭", status:"draft", letter:"", comment:"", minutes:0};
+  startedAt=Date.now(); go('pick');
+}
+function resume(id){
+  cur=S.events.find(e=>e.id===id) || (S.wip&&S.wip.id===id? S.wip:null);
+  if(!cur)return; startedAt=Date.now()-(cur.minutes||0)*60000;
+  if(cur.letter){ result(); return; }
+  cur.type? (cur.date? go('mood') : go('when')) : go('pick'); }
+
+/* ============ wizard ============ */
+function pick(){
+  P.innerHTML=`${bar({back:"home()", title:"行事をえらぶ", right:stepDots(1)})}
+  <div class="screen"><div style="height:8px"></div><div class="rows">
+    ${Object.entries(EV).map(([k,d])=>`
+      <button class="row ${cur.type===k?"sel":""}" onclick="cur.type='${k}';go('when')">
+        <span class="ic" style="background:${d.soft}">${d.emoji}</span><span class="txt">${d.name}</span><span class="chev">›</span></button>`).join("")}
+  </div></div>`;
+}
+function when(){
+  const d=EV[cur.type];
+  P.innerHTML=`${bar({back:"go('pick')", title:"日にちと場所", right:stepDots(2)})}
+  <div class="screen"><div class="formwrap">
+    <label class="f">開催日</label>
+    <input type="date" id="w_date" value="${cur.date}" onchange="cur.date=this.value;checkNext()">
+    <label class="f">はじまる時間</label>
+    <div class="chips">${TIMES.map(t=>`<button class="chip ${cur.time===t?"sel":""}" onclick="cur.time='${t}';when()">${t}</button>`).join("")}</div>
+    <label class="f">場所</label>
+    <input type="text" value="${esc(cur.place)}" onchange="cur.place=this.value">
+  </div></div>
+  <div class="ctabar"><button class="btn-p" id="nextBtn" ${cur.date?"":"disabled"} onclick="go('mood')">つぎへ</button></div>`;
+}
+function checkNext(){ document.getElementById("nextBtn").disabled=!cur.date; }
+function mood(){
+  P.innerHTML=`${bar({back:"go('when')", title:"文のふんいき", right:stepDots(3)})}
+  <div class="screen"><div style="height:8px"></div><div class="rows">
+    ${Object.entries(MOODS).map(([k,m])=>`
+      <button class="row ${cur.mood===k?"sel":""}" onclick="cur.mood='${k}';go('photos')">
+        <span class="txt">${m.label}<span class="sub">例）${m.ex}</span></span>
+        ${cur.mood===k?'<span class="check">✓</span>':'<span class="chev">›</span>'}</button>`).join("")}
+  </div></div>`;
+}
+function photos(){
+  P.innerHTML=`${bar({back:"go('mood')", title:"写真のわく", right:stepDots(4)})}
+  <div class="screen">
+    <div class="slabel">ポスターに入れる写真のわくの数。写真そのものを外部に送ることはありません。</div>
+    <div class="rows">
+    ${[["0","なし"],["2","2つ"],["3","3つ"]].map(([v,l])=>`
+      <button class="row ${cur.photos==v?"sel":""}" onclick="cur.photos=${v};go('making')">
+        <span class="txt">${l}</span><span class="chev">›</span></button>`).join("")}
+  </div></div>`;
+}
+
+/* ============ making ============ */
+function making(){
+  const d=EV[cur.type];
+  const n=matCount(cur.type);
+  P.innerHTML=`${bar({title:d.name})}
+  <div class="screen"><div class="loading">
+    ${bako(72)}
+    <div class="msg" id="loadMsg">${n?`去年の資料（${n}枚）を確認しています`:`去年の${d.name}の資料を確認しています`}</div>
+  </div></div>`;
+  setTimeout(()=>{ const m=document.getElementById("loadMsg"); if(m)m.textContent="今年の日付に直しています"; },800);
+  setTimeout(()=>{ const m=document.getElementById("loadMsg"); if(m)m.textContent="ことばを見直しています"; },1500);
+  setTimeout(()=>{ cur.letter=buildLetter();
+    if(!S.events.find(e=>e.id===cur.id)) S.events.push(cur);
+    cur.status="draft"; S.wip=null; save(); result(); },2100);
+}
+function buildLetter(){
+  const d=EV[cur.type];
+  const season={undoukai:"秋晴れが気持ちよい季節になりました",
+    natsumatsuri:"せみの声がにぎやかな季節になりました",
+    happyoukai:"木々の葉が色づく季節になりました",
+    sotsuen:"春の日ざしがやわらかくなってきました"}[cur.type];
+  const open={teinei:"日ごろより、園の活動にご協力いただきありがとうございます。",
+    attaka:"いつもあたたかいご協力をありがとうございます。",
+    wakuwaku:"子どもたちは、当日を楽しみにしています！"}[cur.mood];
+  const close={teinei:"お忙しいところ恐れ入りますが、ぜひお越しください。",
+    attaka:"子どもたちの成長した姿を、楽しみにいらしてください。",
+    wakuwaku:"当日は、子どもたちと一緒に楽しんでください！"}[cur.mood];
+  const kids={undoukai:"子どもたちは、かけっこやダンスの練習に元気いっぱいです。",
+    natsumatsuri:"おみこしや盆おどりの練習をしています。お祭りの日が待ちきれない様子です。",
+    happyoukai:"歌や合奏、劇あそびの練習をしています。友だちと力を合わせる楽しさを感じています。",
+    sotsuen:"この一年で、ぐんと大きくなった子どもたち。園で過ごす残りの日々を大切にしています。"}[cur.type];
+  const cls=S.classes? `\n【たいしょう】${S.classes} ぐみ`:"";
+  return `保護者の皆様
+
+${season}。${open}
+
+${S.garden}の「${d.name}」を、下記のとおり行います。${kids}
+
+【日にち】${jpDate(cur.date)} ${cur.time}〜
+【ばしょ】${cur.place}${cls}
+
+${close}
+
+${S.garden}`;
+}
+function checks(){
+  const out=[];
+  out.push({ok:true, label:`${jpDate(cur.date)}。曜日は合っています`});
+  const ngs=(S.ng||"").split(",").map(s=>s.trim()).filter(Boolean);
+  const hit=ngs.filter(w=>cur.letter.includes(w));
+  out.push(hit.length? {ok:false,label:`「${hit.join("、")}」が入っています。園では使わない言葉です`}
+                     : {ok:true, label:`園で使わない言葉は入っていません`});
+  out.push({ok:cur.letter.includes(cur.place), label: cur.letter.includes(cur.place)?"場所の書きもれはありません":"場所が書かれていません"});
+  const n=matCount(cur.type);
+  if(n) out.push({ok:true, label:`去年の資料 ${n}枚をもとにしています`});
+  out.push({ok:true, label:"写真は外部に送っていません"});
+  return out;
+}
+
+/* ============ result ============ */
+function result(){
+  const d=EV[cur.type];
+  P.innerHTML=`${bar({back:"home()", title:d.name+"のおたより"})}
+  <div class="screen">
+    <div class="slabel">おたより（タップすると直せます）</div>
+    <div class="paperwrap">
+      ${cur.status==="approved"?'<div class="stamp stamp-md">済</div>':""}
+      <div class="paper" contenteditable="${cur.status!=="approved"}" oninput="cur.letter=this.innerText;save()">${esc(cur.letter)}</div>
+    </div>
+
+    <div class="slabel">見直し</div>
+    ${checks().map(c=>`<div class="checkrow ${c.ok?"":"ng"}"><span class="m">${c.ok?"✓":"！"}</span><span>${c.label}</span></div>`).join("")}
+
+    <div class="slabel">ポスター</div>
+    <div class="posterbox">${posterHtml()}</div>
+
+    ${cur.comment?`<div class="slabel">園長先生から</div>
+      <div class="paper" style="background:#fffbe8">${esc(cur.comment)}</div>`:""}
+    <div style="height:16px"></div>
+  </div>
+  <div class="ctabar"><button class="btn-p" onclick="${cur.status==="approved"?"showDone()":"openSend()"}">
+    ${cur.status==="approved"?"印刷・保存へ": cur.status==="review"?"園長先生の画面をひらく":"園長先生に確認してもらう"}</button></div>`;
+}
+
+/* ============ poster ============ */
+function garlandSvg(colors){
+  const flags=Array.from({length:9},(_,i)=>{
+    const x=i*46+8, c=colors[i%colors.length];
+    return `<path d="M${x} 14 L${x+34} 14 L${x+17} 44 Z" fill="${c}"/>`;}).join("");
+  return `<svg class="garland" viewBox="0 0 430 52" preserveAspectRatio="none">
+    <path d="M0 10 Q215 26 430 10" stroke="rgba(255,255,255,.85)" stroke-width="3" fill="none"/>${flags}</svg>`;
+}
+function confettiDots(colors){
+  const pos=[["12%","22%"],["85%","18%"],["8%","62%"],["90%","58%"],["16%","82%"],["82%","80%"],["50%","14%"]];
+  return pos.map(([l,t],i)=>`<div class="confetti" style="left:${l};top:${t};width:${7+(i%3)*3}px;height:${7+(i%3)*3}px;background:${colors[i%colors.length]}"></div>`).join("");
+}
+function posterHtml(){
+  const d=EV[cur.type];
+  const dark = cur.type==="natsumatsuri";
+  const frames=cur.photos>0?`<div class="photo-strip">${Array(+cur.photos).fill(0).map(()=>`<div class="polaroid"><div class="ph">📷</div></div>`).join("")}</div>`:"";
+  return `<div class="poster" style="background:${d.bg}">
+    ${garlandSvg(d.flags)}${confettiDots(d.conf)}
+    ${frames}
+    <div class="body" style="${cur.photos>0?"padding-top:2%":""}">
+      <div class="p-emoji">${d.emoji}</div>
+      <h3 style="${dark?"color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.15);":`color:${d.accent};text-shadow:0 3px 0 rgba(255,255,255,.7);`}">${d.name}</h3>
+      <div class="p-datebox"><div class="p-date" style="color:${d.accent}">${jpDate(cur.date)}</div>
+        <div class="p-time">${cur.time} スタート</div></div>
+      <div class="p-place">ばしょ：${esc(cur.place)}</div>
+    </div>
+    <div class="p-garden">${esc(S.garden)}</div>
+  </div>`;
+}
+
+/* ============ send / principal ============ */
+function openSend(){
+  cur.status="review"; save();
+  const bg=document.createElement("div"); bg.className="sheet-bg"; bg.id="sheet";
+  bg.onclick=e=>{ if(e.target===bg){bg.remove();result();} };
+  bg.innerHTML=`<div class="sheet"><div class="grab"></div>
+    <div class="sh">園長先生に確認してもらう</div>
+    <button class="row" onclick="mockLine()"><span class="ic">💬</span><span class="txt">LINEで送る<span class="sub">確認用のリンクを送ります（デモ）</span></span><span class="chev">›</span></button>
+    <button class="row" style="border-bottom:none" onclick="document.getElementById('sheet').remove();principal()"><span class="ic">📱</span><span class="txt">この画面を見せる<span class="sub">そばにいるなら、そのまま渡してOK</span></span><span class="chev">›</span></button>
+  </div>`;
+  document.body.appendChild(bg);
+}
+function mockLine(){ document.getElementById("sheet").remove();
+  toast("LINEで送りました（デモ）"); principal(); }
+function principal(){
+  const d=EV[cur.type];
+  P.innerHTML=`${bar({title:"確認"})}
+  <div class="p-note">園長先生の画面です</div>
+  <div class="screen bigtext">
+    <div class="slabel">${d.name}のおたより。内容をご確認ください。</div>
+    <div class="paper">${esc(cur.letter)}</div>
+    <div class="slabel">ポスター</div>
+    <div class="posterbox">${posterHtml()}</div>
+    <div style="padding:26px 16px 8px">
+      <button class="stampbtn" onclick="approve()">済</button>
+      <div class="stampcap">よければ、はんこを押してください</div>
+    </div>
+    <div style="padding:6px 16px 20px"><button class="btn-o" onclick="askFix()">直してほしいところがある</button></div>
+  </div>`;
+}
+function approve(){ cur.status="approved";
+  cur.minutes=Math.max(1,Math.round((Date.now()-startedAt)/60000));
+  save(); showDone(); }
+function askFix(){
+  const c=prompt("直してほしいところを、ひとこと どうぞ");
+  if(c===null) return;
+  cur.comment=c||"もう一度見てください"; cur.status="draft"; save();
+  toast("先生に返しました"); result(); }
+
+/* ============ done ============ */
+function showDone(){
+  const code="GYJ"+String(10000+((cur.id*7919)%80000));
+  const mins=cur.minutes||1;
+  P.innerHTML=`${bar({back:"home()", title:"できあがり"})}
+  <div class="screen">
+    <div class="donehead"><div class="stamp stamp-lg stamped" style="margin:0 auto">済</div>
+      <div class="t">おたよりとポスターができました</div>
+      <div class="time">かかった時間 ${mins}分（手作業なら2時間ほど）</div></div>
+    <div class="slabel">印刷</div>
+    <div class="rows">
+      <button class="row" onclick="printOut('letter')"><span class="txt">おたよりを印刷<span class="sub">園のパソコン・プリンタで。PDF保存もできます</span></span><span class="chev">›</span></button>
+      <button class="row" onclick="printOut('poster')"><span class="txt">ポスターを印刷<span class="sub">A4サイズ</span></span><span class="chev">›</span></button>
+    </div>
+    <div class="npbox"><div class="l">セブンイレブンのコピー機なら（デモ）</div>
+      <div class="code">${code}</div>
+      <div class="l">この番号を入れるだけ</div></div>
+    <div style="padding:16px"><button class="btn-o" onclick="home()">ホームにもどる</button></div>
+  </div>`;
+}
+function printOut(kind){
+  const pa=document.getElementById("printArea");
+  pa.innerHTML = kind==="poster"? posterHtml() : `<div class="paper">${esc(cur.letter)}</div>`;
+  window.print();
+}
+
+/* ============ settings ============ */
+function settings(){
+  P.innerHTML=`${bar({back:cur?"result()":"home()", title:"園の情報"})}
+  <div class="screen"><div class="formwrap">
+    <label class="f">園の名前（必須）</label>
+    <input type="text" id="s_garden" value="${esc(S.garden)}" placeholder="ひまわり保育園">
+    <label class="f">クラスの名前（・でくぎる）</label>
+    <input type="text" id="s_classes" value="${esc(S.classes)}" placeholder="ひよこ・りす・ぱんだ">
+    <label class="f">おたよりで使わない言葉（,でくぎる）</label>
+    <input type="text" id="s_ng" value="${esc(S.ng)}">
+    <label class="f">園で大切にしていること</label>
+    <textarea id="s_principle" placeholder="のびのびと、じぶんらしく。">${esc(S.principle)}</textarea>
+  </div>
+  <div class="slabel" style="padding-top:26px">去年の資料</div>
+  <div class="rows">
+    <button class="row" onclick="go('materials')">
+      <span class="txt">去年のおたより・ポスター<span class="sub">写真に撮って入れておくと、下書きのもとになります</span></span>
+      <span class="side">${matTotal()?matTotal()+"枚":"なし"}</span><span class="chev">›</span></button>
+  </div>
+  <div style="padding:20px 16px 0"><button class="btn-o" onclick="fillSample()">おためしデータを入れる</button></div>
+  <div class="foot">とちゅうで呼ばれても、つづきから再開できます<br>
+    お子さんの写真を外部に送ることはありません<br>
+    保育士資格を持つ開発者が作っています</div>
+  </div>
+  <div class="ctabar"><button class="btn-p" onclick="saveSettings()">保存</button></div>`;
+}
+
+/* ============ 去年の資料 ============ */
+function materials(){
+  P.innerHTML=`${bar({back:"settings()", title:"去年の資料"})}
+  <div class="screen">
+    <div class="slabel">去年のおたよりやポスターを、写真に撮って入れておく場所です。ここに入れたものをもとに、今年の下書きを作ります。写真は この端末の中にだけ保存されます。</div>
+    ${Object.entries(EV).map(([k,d])=>{
+      const list=(S.materials||{})[k]||[];
+      return `<div class="slabel">${d.emoji} ${d.name}</div>
+      <div class="rows">
+        ${list.map((m,i)=>`<div class="row">
+          <img src="${m}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex:none">
+          <span class="txt">去年の${d.name} ${i+1}</span>
+          <button class="side" style="color:var(--danger)" onclick="delMat('${k}',${i})">削除</button></div>`).join("")}
+        <button class="row" onclick="document.getElementById('mat_${k}').click()">
+          <span class="ic" style="color:var(--accent)">＋</span><span class="txt" style="color:var(--accent)">写真を追加</span></button>
+        <input type="file" id="mat_${k}" accept="image/*" style="display:none" onchange="addMat('${k}',this)">
+      </div>`;}).join("")}
+    <div style="height:20px"></div>
+  </div>`;
+}
+function addMat(type,input){
+  const f=input.files && input.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ const img=new Image();
+    img.onload=()=>{ const c=document.createElement("canvas");
+      const scale=Math.min(1, 480/Math.max(img.width,img.height));
+      c.width=Math.round(img.width*scale); c.height=Math.round(img.height*scale);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      storeMat(type, c.toDataURL("image/jpeg",.72)); };
+    img.src=rd.result; };
+  rd.readAsDataURL(f);
+}
+function storeMat(type,dataUrl){
+  if(!S.materials) S.materials={};
+  if(!S.materials[type]) S.materials[type]=[];
+  S.materials[type].push(dataUrl);
+  try{ save(); }catch(e){ S.materials[type].pop(); toast("空きが足りず保存できませんでした"); return; }
+  toast("去年の資料を入れました"); materials();
+}
+function delMat(type,i){
+  S.materials[type].splice(i,1); save(); materials();
+}
+function fillSample(){ S.garden="ひまわり保育園"; S.classes="ひよこ・りす・ぱんだ";
+  S.ng="必ず,絶対,がんばれ"; S.principle="のびのびと、じぶんらしく。"; save(); settings(); toast("おためしデータを入れました"); }
+function saveSettings(){
+  S.garden=document.getElementById("s_garden").value.trim();
+  S.classes=document.getElementById("s_classes").value.trim();
+  S.ng=document.getElementById("s_ng").value.trim();
+  S.principle=document.getElementById("s_principle").value.trim();
+  save(); toast("保存しました"); cur? result() : home(); }
+
+/* ============ boot ============ */
+home();
+</script>
+</body>
+</html>
