@@ -51,6 +51,8 @@
   .row .ic{width:36px;height:36px;border-radius:10px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:19px;flex:none;}
   .row .ic svg{width:24px;height:24px;display:block;}
   .nextev .ic svg{width:26px;height:26px;display:block;}
+  .thumb{width:52px;height:74px;border-radius:6px;overflow:hidden;flex:none;box-shadow:0 1px 4px rgba(0,0,0,.16);}
+  .thumbin{display:block;width:358px;transform:scale(0.1453);transform-origin:top left;pointer-events:none;}
   .row .txt{flex:1;line-height:1.5;}
   .row .sub{display:block;font-size:12px;color:var(--sub);margin-top:2px;}
   .row .side{font-size:13px;color:var(--sub);flex:none;}
@@ -374,29 +376,45 @@ function nextEvent(){
     <span class="cnt">${days===0?`<span class="n">きょう</span>`:`<span class="a">あと</span><span class="n">${days}</span><span class="a">日</span>`}</span>
   </button>`;
 }
+const YEAR_ORDER=["natsumatsuri","undoukai","happyoukai","sotsuen"];
+const SEASON={natsumatsuri:"なつ",undoukai:"あき",happyoukai:"ふゆ",sotsuen:"はる"};
+function latestOf(type){
+  const list=S.events.filter(e=>e.type===type);
+  if(S.wip && S.wip.type===type && !S.events.find(e=>e.id===S.wip.id)) list.push(S.wip);
+  if(!list.length) return null;
+  return list.sort((a,b)=>b.id-a.id)[0];
+}
 function home(){
   cur=null;
   if(S.wip && !S.wip.type){ S.wip=null; save(); }   // 行事を選ぶ前のゴミは残さない
-  const making=S.events.filter(e=>e.status!=="approved");
-  if(S.wip && !S.events.find(e=>e.id===S.wip.id)) making.unshift(S.wip);
-  const done=S.events.filter(e=>e.status==="approved");
   P.innerHTML=`${bar({title:"ぎょうじばこ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
   <div class="screen">
     ${nextEvent()}
     <div class="homehero"><button class="btn-p" onclick="startNew()">行事のおたよりをつくる</button></div>
-    ${(!making.length && !done.length)?`<div class="emptyhome">${bako(76)}
+    ${S.events.length===0 && !S.wip?`<div class="emptyhome">${bako(76)}
       <div class="m">はじめてのおたよりを、5分で作ってみましょう。<br>去年の資料があると、もっと園らしくなります。</div></div>`:""}
-    ${making.length?`<div class="slabel">つくりかけ</div><div class="rows">
-      ${making.map(e=>`<button class="row" onclick="resume(${e.id})">
-        <span class="ic" style="${e.type?`background:${EV[e.type].soft}`:""}">${e.type?evIcon(e.type):"✎"}</span>
-        <span class="txt">${e.type?EV[e.type].name:"新しいおたより"}<span class="sub">${e.status==="review"?"園長先生の確認まち":"つづきから作れます"}</span></span>
-        <span class="chev">›</span></button>`).join("")}</div>`:""}
-    ${done.length?`<div class="slabel">できあがり</div><div class="rows">
-      ${done.map(e=>`<button class="row" onclick="resume(${e.id})">
-        <span class="ic" style="background:${EV[e.type].soft}">${evIcon(e.type)}</span>
-        <span class="txt">${EV[e.type].name}<span class="sub">${jpDate(e.date)}</span></span>
-        <span class="stamp stamp-sm">済</span><span class="chev">›</span></button>`).join("")}</div>`:""}
+    <div class="slabel">ことしの行事</div><div class="rows">
+      ${YEAR_ORDER.map(k=>{
+        const d=EV[k], e=latestOf(k);
+        const left = (e && e.letter)? `<span class="thumb"><span class="thumbin">${posterHtml(e)}</span></span>`
+                   : `<span class="ic" style="background:${d.soft}">${evIcon(k)}</span>`;
+        const sub = e? (e.status==="approved"? jpDate(e.date)
+                      : e.status==="review"? "園長先生の確認まち"
+                      : "つくりかけ・つづきから作れます")
+                    : `${SEASON[k]}の行事`;
+        const right = (e && e.status==="approved")? '<span class="stamp stamp-sm">済</span>'
+                    : e? "" : `<span class="side" style="color:var(--accent);font-weight:700">つくる</span>`;
+        return `<button class="row" onclick="${e?`resume(${e.id})`:`startNewWith('${k}')`}">
+          ${left}<span class="txt">${d.name}<span class="sub">${sub}</span></span>${right}<span class="chev">›</span></button>`;
+      }).join("")}
+    </div>
   </div>`;
+}
+function startNewWith(type){
+  if(!S.garden){ go('settings'); toast("さいしょに園の名前を登録してください"); return; }
+  cur={id:S.seq++, type, date:"", time:"10:00", mood:"attaka", photos:2,
+       place:"園庭", status:"draft", letter:"", comment:"", minutes:0};
+  startedAt=Date.now(); go('when');
 }
 function startNew(){
   if(!S.garden){ go('settings'); toast("さいしょに園の名前を登録してください"); return; }
@@ -549,19 +567,20 @@ function confettiDots(colors){
   const pos=[["12%","22%"],["85%","18%"],["8%","62%"],["90%","58%"],["16%","82%"],["82%","80%"],["50%","14%"]];
   return pos.map(([l,t],i)=>`<div class="confetti" style="left:${l};top:${t};width:${7+(i%3)*3}px;height:${7+(i%3)*3}px;background:${colors[i%colors.length]}"></div>`).join("");
 }
-function posterHtml(){
-  const d=EV[cur.type];
-  const dark = cur.type==="natsumatsuri";
-  const frames=cur.photos>0?`<div class="photo-strip">${Array(+cur.photos).fill(0).map(()=>`<div class="polaroid"><div class="ph">📷</div></div>`).join("")}</div>`:"";
+function posterHtml(ev){
+  const e=ev||cur;
+  const d=EV[e.type];
+  const dark = e.type==="natsumatsuri";
+  const frames=e.photos>0?`<div class="photo-strip">${Array(+e.photos).fill(0).map(()=>`<div class="polaroid"><div class="ph">📷</div></div>`).join("")}</div>`:"";
   return `<div class="poster" style="background:${d.bg}">
     ${garlandSvg(d.flags)}${confettiDots(d.conf)}
     ${frames}
-    <div class="body" style="${cur.photos>0?"padding-top:2%":""}">
-      <div class="p-icon">${evIcon(cur.type)}</div>
+    <div class="body" style="${e.photos>0?"padding-top:2%":""}">
+      <div class="p-icon">${evIcon(e.type)}</div>
       <h3 style="${dark?"color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.15);":`color:${d.accent};text-shadow:0 3px 0 rgba(255,255,255,.7);`}">${d.name}</h3>
-      <div class="p-datebox"><div class="p-date" style="color:${d.accent}">${jpDate(cur.date)}</div>
-        <div class="p-time">${cur.time} スタート</div></div>
-      <div class="p-place">ばしょ：${esc(cur.place)}</div>
+      <div class="p-datebox"><div class="p-date" style="color:${d.accent}">${jpDate(e.date)}</div>
+        <div class="p-time">${e.time} スタート</div></div>
+      <div class="p-place">ばしょ：${esc(e.place)}</div>
     </div>
     <div class="p-garden">${esc(S.garden)}</div>
   </div>`;
