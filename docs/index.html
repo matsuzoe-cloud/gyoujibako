@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ぎょうじばこ</title>
 <meta name="robots" content="noindex, nofollow">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
@@ -182,6 +184,21 @@
 
   .foot{margin-top:36px;padding:0 16px 20px;font-size:12px;line-height:2;color:#b5b5b5;text-align:center;}
 
+  /* ---- アプリロック ---- */
+  .lockwrap{display:flex;flex-direction:column;align-items:center;gap:16px;padding:80px 20px;}
+  .lockt{font-weight:700;}
+  .lockerr{color:var(--danger);font-size:13px;font-weight:700;}
+  .lockwrap input{text-align:center;font-size:22px;letter-spacing:6px;max-width:220px;}
+  .lockwrap .btn-p{max-width:220px;width:100%;}
+
+  /* ---- PC・タブレット ---- */
+  @media(min-width:880px){
+    .phone{max-width:860px;}
+    .resultgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:0 28px;align-items:start;padding-right:16px;}
+    .resultgrid .colR{position:sticky;top:64px;}
+    .ctabar .btn-p{max-width:420px;margin:0 auto;}
+  }
+
   .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(51,51,51,.92);color:#fff;
     padding:11px 20px;border-radius:8px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:99;white-space:nowrap;}
   .toast.show{opacity:1;}
@@ -220,10 +237,59 @@ const MOODS = {
 };
 const TIMES = ["9:00","9:30","10:00","15:30","16:00"];
 
-let S = load();
+let S = null;
 function load(){ try{ const d=JSON.parse(localStorage.getItem("gyoujibako2")); if(d&&d.garden!==undefined) return d; }catch(e){}
   return {garden:"", classes:"", ng:"必ず,絶対,がんばれ", principle:"", events:[], seq:1, wip:null, materials:{}}; }
-function save(){ localStorage.setItem("gyoujibako2", JSON.stringify(S)); }
+
+/* ---- 暗号化保存(アプリロック)。鍵はロック番号から導出。端末の外には何も出ない ---- */
+const ENC_KEY="gyoujibako2enc", PLAIN_KEY="gyoujibako2";
+let cryptoKey=null, encSalt=null;
+function b64(buf){ return btoa(String.fromCharCode(...new Uint8Array(buf))); }
+function unb64(s){ return Uint8Array.from(atob(s), c=>c.charCodeAt(0)); }
+async function deriveKey(pin, saltBytes){
+  const base=await crypto.subtle.importKey("raw", new TextEncoder().encode(pin), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt:saltBytes, iterations:150000, hash:"SHA-256"},
+    base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]); }
+async function saveEncrypted(){
+  try{
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const ct=await crypto.subtle.encrypt({name:"AES-GCM", iv}, cryptoKey, new TextEncoder().encode(JSON.stringify(S)));
+    localStorage.setItem(ENC_KEY, JSON.stringify({salt:encSalt, iv:b64(iv), ct:b64(ct)}));
+  }catch(e){ toast("保存できませんでした"); } }
+function save(){ if(cryptoKey){ saveEncrypted(); } else localStorage.setItem(PLAIN_KEY, JSON.stringify(S)); }
+async function enableLock(pin){
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  encSalt=b64(salt); cryptoKey=await deriveKey(pin, salt);
+  await saveEncrypted(); localStorage.removeItem(PLAIN_KEY); }
+async function disableLock(){ cryptoKey=null; encSalt=null; localStorage.removeItem(ENC_KEY); save(); }
+async function unlock(pin){
+  try{
+    const blob=JSON.parse(localStorage.getItem(ENC_KEY));
+    const key=await deriveKey(pin, unb64(blob.salt));
+    const pt=await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(blob.iv)}, key, unb64(blob.ct));
+    S=JSON.parse(new TextDecoder().decode(pt));
+    cryptoKey=key; encSalt=blob.salt; return true;
+  }catch(e){ return false; } }
+
+/* ---- 5分さわらないと自動ロック ---- */
+let idleTimer=null;
+function armIdle(){ if(!cryptoKey) return; clearTimeout(idleTimer); idleTimer=setTimeout(()=>location.reload(), 5*60*1000); }
+["click","keydown","input","touchstart"].forEach(ev=>document.addEventListener(ev, armIdle, {passive:true}));
+
+function lockScreen(msg){
+  P.innerHTML=`${bar({title:"ぎょうじばこ"})}
+  <div class="screen"><div class="lockwrap">
+    ${bako(76)}
+    <div class="lockt">ロックがかかっています</div>
+    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="ロック番号" autocomplete="off">
+    <button class="btn-p" onclick="tryUnlock()">あける</button>
+    ${msg?`<div class="lockerr">${msg}</div>`:""}
+  </div></div>`;
+  const el=document.getElementById("pin"); el.focus();
+  el.addEventListener("keydown",e=>{ if(e.key==="Enter") tryUnlock(); }); }
+async function tryUnlock(){
+  const ok=await unlock(document.getElementById("pin").value.trim());
+  if(ok){ armIdle(); home(); } else lockScreen("番号がちがいます"); }
 function toast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2200); }
 function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function jpDate(iso){ if(!iso)return ""; const dt=new Date(iso+"T00:00:00");
@@ -416,7 +482,7 @@ function checks(){
 function result(){
   const d=EV[cur.type];
   P.innerHTML=`${bar({back:"home()", title:d.name+"のおたより"})}
-  <div class="screen">
+  <div class="screen"><div class="resultgrid"><div class="colL">
     <div class="slabel">おたより（タップすると直せます）</div>
     <div class="paperwrap">
       ${cur.status==="approved"?'<div class="stamp stamp-md">済</div>':""}
@@ -426,12 +492,12 @@ function result(){
     <div class="slabel">見直し</div>
     ${checks().map(c=>`<div class="checkrow ${c.ok?"":"ng"}"><span class="m">${c.ok?"✓":"！"}</span><span>${c.label}</span></div>`).join("")}
 
-    <div class="slabel">ポスター</div>
-    <div class="posterbox">${posterHtml()}</div>
-
     ${cur.comment?`<div class="slabel">園長先生から</div>
       <div class="paper" style="background:#fffbe8">${esc(cur.comment)}</div>`:""}
-    <div style="height:16px"></div>
+  </div><div class="colR">
+    <div class="slabel">ポスター</div>
+    <div class="posterbox">${posterHtml()}</div>
+  </div></div><div style="height:16px"></div>
   </div>
   <div class="ctabar"><button class="btn-p" onclick="${cur.status==="approved"?"showDone()":"openSend()"}">
     ${cur.status==="approved"?"印刷・保存へ": cur.status==="review"?"園長先生の画面をひらく":"園長先生に確認してもらう"}</button></div>`;
@@ -485,11 +551,13 @@ function principal(){
   const d=EV[cur.type];
   P.innerHTML=`${bar({title:"確認"})}
   <div class="p-note">園長先生の画面です</div>
-  <div class="screen bigtext">
+  <div class="screen bigtext"><div class="resultgrid"><div class="colL">
     <div class="slabel">${d.name}のおたより。内容をご確認ください。</div>
     <div class="paper">${esc(cur.letter)}</div>
+  </div><div class="colR">
     <div class="slabel">ポスター</div>
     <div class="posterbox">${posterHtml()}</div>
+  </div></div>
     <div style="padding:26px 16px 8px">
       <button class="stampbtn" onclick="approve()">済</button>
       <div class="stampcap">よければ、はんこを押してください</div>
@@ -551,6 +619,13 @@ function settings(){
       <span class="txt">去年のおたより・ポスター<span class="sub">写真に撮って入れておくと、下書きのもとになります</span></span>
       <span class="side">${matTotal()?matTotal()+"枚":"なし"}</span><span class="chev">›</span></button>
   </div>
+  <div class="slabel" style="padding-top:26px">アプリロック</div>
+  ${cryptoKey?`<div class="rows"><button class="row" onclick="doDisableLock()">
+      <span class="txt">ロックを解除する<span class="sub">暗号化をやめて、この端末にそのまま保存します</span></span><span class="chev">›</span></button></div>`
+  :`<div class="formwrap"><label class="f">ロック番号（4〜8桁の数字）</label>
+    <input type="password" id="s_pin" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="共用のパソコンで使うなら設定を">
+    <div style="padding:12px 0 0"><button class="btn-o" onclick="doEnableLock()">ロックをかける（中身を暗号化して保存）</button></div>
+    <div style="font-size:12px;color:var(--sub);padding-top:8px;line-height:1.9">開くたびに番号が必要になります。5分さわらないと自動でロックされます。<br>⚠ 番号を忘れると中身は開けません。</div></div>`}
   <div style="padding:20px 16px 0"><button class="btn-o" onclick="fillSample()">おためしデータを入れる</button></div>
   <div class="foot">とちゅうで呼ばれても、つづきから再開できます<br>
     お子さんの写真を外部に送ることはありません<br>
@@ -601,6 +676,11 @@ function storeMat(type,dataUrl){
 function delMat(type,i){
   S.materials[type].splice(i,1); save(); materials();
 }
+async function doEnableLock(){
+  const pin=document.getElementById("s_pin").value.trim();
+  if(!/^\d{4,8}$/.test(pin)){ toast("4〜8桁の数字にしてください"); return; }
+  await enableLock(pin); armIdle(); toast("ロックをかけました"); settings(); }
+async function doDisableLock(){ await disableLock(); toast("ロックを解除しました"); settings(); }
 function fillSample(){ S.garden="ひまわり保育園"; S.classes="ひよこ・りす・ぱんだ";
   S.ng="必ず,絶対,がんばれ"; S.principle="のびのびと、じぶんらしく。"; save(); settings(); toast("おためしデータを入れました"); }
 function saveSettings(){
@@ -611,7 +691,7 @@ function saveSettings(){
   save(); toast("保存しました"); cur? result() : home(); }
 
 /* ============ boot ============ */
-home();
+if(localStorage.getItem(ENC_KEY)){ lockScreen(); } else { S=load(); home(); }
 </script>
 </body>
 </html>
