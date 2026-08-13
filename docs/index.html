@@ -46,7 +46,8 @@
   .slabel{font-size:12px;font-weight:700;color:var(--sub);padding:20px 16px 8px;}
   .rows{background:#fff;}
   .row{display:flex;align-items:center;gap:12px;width:100%;min-height:54px;padding:13px 16px;
-    border-bottom:1px solid var(--line);text-align:left;background:#fff;font-size:16px;}
+    border-bottom:1px solid var(--line);text-align:left;background:#fff;font-size:16px;position:relative;}
+  .evbar{position:absolute;left:4px;top:12px;bottom:12px;width:3px;border-radius:2px;}
   .row:active{background:var(--bg2);}
   .row .ic{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none;}
   .row .ic svg{width:28px;height:28px;display:block;}
@@ -84,6 +85,12 @@
     font-size:15px;font-weight:700;text-align:center;color:var(--ink);margin-top:8px;}
 
   .homehero{padding:18px 16px 6px;}
+  .fab{position:fixed;bottom:26px;right:18px;width:56px;height:56px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:26px;font-weight:700;z-index:15;
+    box-shadow:0 4px 14px rgba(226,110,136,.45);display:flex;align-items:center;justify-content:center;}
+  .fab:active{transform:scale(.93);}
+  @media(min-width:431px){.fab{right:calc(50vw - 197px);}}
+  @media(min-width:880px){.fab{right:calc(50vw - 412px);}}
 
   /* ---- つぎの行事（ルナルナ型カウントダウン） ---- */
   .nextev{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);background:#fff;}
@@ -229,7 +236,7 @@
 
 <script>
 /* ============ data ============ */
-const APP_VER = "2026.8.13-b";
+const APP_VER = "2026.8.13-c";
 const EV = {
   undoukai:{name:"運動会", emoji:"🏃", accent:"#f2762e", soft:"#eaf4fc",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
@@ -391,7 +398,6 @@ function home(){
   P.innerHTML=`${bar({title:"ぎょうじばこ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
   <div class="screen">
     ${nextEvent()}
-    <div class="homehero"><button class="btn-p" onclick="startNew()">行事のおたよりをつくる</button></div>
     ${S.events.length===0 && !S.wip?`<div class="emptyhome">${bako(76)}
       <div class="m">はじめてのおたよりを、5分で作ってみましょう。<br>去年の資料があると、もっと園らしくなります。</div></div>`:""}
     <div class="slabel">ことしの行事</div><div class="rows">
@@ -406,11 +412,13 @@ function home(){
         const right = (e && e.status==="approved")? '<span class="stamp stamp-sm">済</span>'
                     : e? "" : `<span class="side" style="color:var(--accent);font-weight:700">つくる</span>`;
         return `<button class="row" onclick="${e?`resume(${e.id})`:`startNewWith('${k}')`}">
+          <span class="evbar" style="background:${d.accent}"></span>
           <span class="mon">${mon}</span>${left}
           <span class="txt">${d.name}${sub?`<span class="sub">${sub}</span>`:""}</span>${right}<span class="chev">›</span></button>`;
       }).join("")}
     </div>
-  </div>`;
+  </div>
+  <button class="fab" onclick="startNew()" aria-label="行事のおたよりをつくる">＋</button>`;
 }
 function startNewWith(type){
   if(!S.garden){ go('settings'); toast("さいしょに園の名前を登録してください"); return; }
@@ -436,6 +444,7 @@ function pick(){
   <div class="screen"><div style="height:8px"></div><div class="rows">
     ${Object.entries(EV).map(([k,d])=>`
       <button class="row ${cur.type===k?"sel":""}" onclick="cur.type='${k}';go('when')">
+        <span class="evbar" style="background:${d.accent}"></span>
         <span class="mon">${MONTH[k]}</span><span class="txt">${d.name}</span><span class="chev">›</span></button>`).join("")}
   </div></div>`;
 }
