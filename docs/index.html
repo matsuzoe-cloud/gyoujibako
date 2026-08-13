@@ -229,7 +229,7 @@
 
 <script>
 /* ============ data ============ */
-const APP_VER = "2026.8.13-a";
+const APP_VER = "2026.8.13-b";
 const EV = {
   undoukai:{name:"運動会", emoji:"🏃", accent:"#f2762e", soft:"#eaf4fc",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
@@ -372,7 +372,6 @@ function nextEvent(){
   const days=Math.round((new Date(e.date+"T00:00:00")-t)/86400000);
   return `<div class="slabel">つぎの行事</div>
   <button class="nextev" style="background:linear-gradient(120deg,${EV[e.type].soft},#ffffff 75%)" onclick="resume(${e.id})">
-    <span class="ic" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center">${evIcon(e.type)}</span>
     <span><span class="nm">${EV[e.type].name}</span>
       <span class="dt" style="display:block">${jpDate(e.date)}・おたより${e.status==="approved"?"済":"作りかけ"}</span></span>
     <span class="cnt">${days===0?`<span class="n">きょう</span>`:`<span class="a">あと</span><span class="n">${days}</span><span class="a">日</span>`}</span>
@@ -399,8 +398,7 @@ function home(){
       ${YEAR_ORDER.map(k=>{
         const d=EV[k], e=latestOf(k);
         const mon = (e && e.date)? `${new Date(e.date+"T00:00:00").getMonth()+1}月` : MONTH[k];
-        const left = (e && e.letter)? `<span class="thumb"><span class="thumbin">${posterHtml(e)}</span></span>`
-                   : `<span class="ic">${evIcon(k)}</span>`;
+        const left = (e && e.letter)? `<span class="thumb"><span class="thumbin">${posterHtml(e)}</span></span>` : "";
         const sub = e? (e.status==="approved"? jpDate(e.date)
                       : e.status==="review"? "園長先生の確認まち"
                       : "つくりかけ・つづきから作れます")
@@ -438,7 +436,7 @@ function pick(){
   <div class="screen"><div style="height:8px"></div><div class="rows">
     ${Object.entries(EV).map(([k,d])=>`
       <button class="row ${cur.type===k?"sel":""}" onclick="cur.type='${k}';go('when')">
-        <span class="ic">${evIcon(k)}</span><span class="txt">${d.name}</span><span class="chev">›</span></button>`).join("")}
+        <span class="mon">${MONTH[k]}</span><span class="txt">${d.name}</span><span class="chev">›</span></button>`).join("")}
   </div></div>`;
 }
 function when(){
@@ -580,7 +578,6 @@ function posterHtml(ev){
     ${garlandSvg(d.flags)}${confettiDots(d.conf)}
     ${frames}
     <div class="body" style="${e.photos>0?"padding-top:2%":""}">
-      <div class="p-icon">${evIcon(e.type)}</div>
       <h3 style="${dark?"color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.15);":`color:${d.accent};text-shadow:0 3px 0 rgba(255,255,255,.7);`}">${d.name}</h3>
       <div class="p-datebox"><div class="p-date" style="color:${d.accent}">${jpDate(e.date)}</div>
         <div class="p-time">${e.time} スタート</div></div>
@@ -597,8 +594,8 @@ function openSend(){
   bg.onclick=e=>{ if(e.target===bg){bg.remove();result();} };
   bg.innerHTML=`<div class="sheet"><div class="grab"></div>
     <div class="sh">園長先生に確認してもらう</div>
-    <button class="row" onclick="mockLine()"><span class="ic">💬</span><span class="txt">LINEで送る<span class="sub">確認用のリンクを送ります（デモ）</span></span><span class="chev">›</span></button>
-    <button class="row" style="border-bottom:none" onclick="document.getElementById('sheet').remove();principal()"><span class="ic">📱</span><span class="txt">この画面を見せる<span class="sub">そばにいるなら、そのまま渡してOK</span></span><span class="chev">›</span></button>
+    <button class="row" onclick="mockLine()"><span class="txt">LINEで送る<span class="sub">確認用のリンクを送ります（デモ）</span></span><span class="chev">›</span></button>
+    <button class="row" style="border-bottom:none" onclick="document.getElementById('sheet').remove();principal()"><span class="txt">この画面を見せる<span class="sub">そばにいるなら、そのまま渡してOK</span></span><span class="chev">›</span></button>
   </div>`;
   document.body.appendChild(bg);
 }
@@ -702,7 +699,7 @@ function materials(){
     <div class="slabel">去年のおたよりやポスターを、写真に撮って入れておく場所です。ここに入れたものをもとに、今年の下書きを作ります。写真は この端末の中にだけ保存されます。</div>
     ${Object.entries(EV).map(([k,d])=>{
       const list=(S.materials||{})[k]||[];
-      return `<div class="slabel">${d.emoji} ${d.name}</div>
+      return `<div class="slabel">${MONTH[k]} ${d.name}</div>
       <div class="rows">
         ${list.map((m,i)=>`<div class="row">
           <img src="${m}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex:none">
