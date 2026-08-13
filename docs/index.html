@@ -229,6 +229,7 @@
 
 <script>
 /* ============ data ============ */
+const APP_VER = "2026.8.13-a";
 const EV = {
   undoukai:{name:"運動会", emoji:"🏃", accent:"#f2762e", soft:"#eaf4fc",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
@@ -688,7 +689,8 @@ function settings(){
   <div style="padding:20px 16px 0"><button class="btn-o" onclick="fillSample()">おためしデータを入れる</button></div>
   <div class="foot">とちゅうで呼ばれても、つづきから再開できます<br>
     お子さんの写真を外部に送ることはありません<br>
-    保育士資格を持つ開発者が作っています</div>
+    保育士資格を持つ開発者が作っています<br><br>
+    ばん ${APP_VER}</div>
   </div>
   <div class="ctabar"><button class="btn-p" onclick="saveSettings()">保存</button></div>`;
 }
