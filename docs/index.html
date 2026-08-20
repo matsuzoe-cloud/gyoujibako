@@ -71,10 +71,11 @@
     display:block;transform:rotate(var(--r,0deg));transition:transform .15s;}
   .evpaper:active{transform:rotate(var(--r,0deg)) scale(.97);}
   .evpaper .pin-thumb{width:390px;transform:scale(0.4359);transform-origin:top left;display:block;pointer-events:none;}
-  .evpaper .blank{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:6px;padding:14px;}
-  .evpaper .bmon{font-family:"Zen Maru Gothic",sans-serif;font-size:30px;font-weight:900;color:#d8cdbc;}
+  .evpaper .blank{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:3px;padding:12px;}
+  .evpaper .blank img{width:104px;height:104px;object-fit:contain;margin-bottom:2px;}
+  .evpaper .bmon{font-family:"Zen Maru Gothic",sans-serif;font-size:16px;font-weight:900;color:#c9beac;}
   .evpaper .bname{font-size:15px;font-weight:700;color:var(--ink);}
-  .evpaper .bcta{font-size:13px;font-weight:700;color:var(--accent);margin-top:8px;}
+  .evpaper .bcta{font-size:13px;font-weight:700;color:var(--accent);margin-top:6px;}
   .evpaper .stamp{position:absolute;right:8px;top:10px;}
   .plabel{text-align:center;font-size:11px;font-weight:700;color:var(--onwallsub);margin-top:10px;letter-spacing:.5px;}
 
@@ -157,7 +158,9 @@
   .poster .garland{position:absolute;top:0;left:0;right:0;}
   .poster .confetti{position:absolute;border-radius:50%;opacity:.5;}
   .poster .body{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;width:100%;padding:14% 9% 16%;}
-  .poster h3{font-size:34px;font-weight:900;line-height:1.25;letter-spacing:2px;}
+  .poster h3{font-size:32px;font-weight:900;line-height:1.25;letter-spacing:2px;}
+  .poster .p-art{width:44%;max-width:160px;object-fit:contain;filter:drop-shadow(0 3px 5px rgba(0,0,0,.12));}
+  .mascot-img{width:112px;height:112px;object-fit:contain;}
   .poster .p-datebox{margin-top:14px;background:rgba(255,255,255,.92);border-radius:14px;padding:9px 20px;box-shadow:0 3px 8px rgba(0,0,0,.08);}
   .poster .p-date{font-size:16px;font-weight:900;}
   .poster .p-time{font-size:12px;font-weight:700;color:#8a8078;}
@@ -229,15 +232,15 @@
 
 <script>
 /* ============ data ============ */
-const APP_VER = "2026.8.13-e";
+const APP_VER = "2026.8.20-a";
 const EV = {
-  undoukai:{name:"運動会", accent:"#f2762e", tape:"rgba(242,118,46,.45)",
+  undoukai:{name:"運動会", accent:"#f2762e", tape:"rgba(242,118,46,.45)", art:"art/usagi_undoukai.webp",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
-  natsumatsuri:{name:"夏祭り", accent:"#e05c6e", tape:"rgba(224,92,110,.42)",
+  natsumatsuri:{name:"夏祭り", accent:"#e05c6e", tape:"rgba(224,92,110,.42)", art:"art/usagi_natsu.webp",
     bg:"linear-gradient(165deg,#2c3e6b 0%,#7c5ba6 55%,#ff9d76 100%)", flags:["#ffd66e","#ff8fab","#7fd8be","#ffb347"], conf:["#ffd66e","#ff8fab","#ffffff"]},
-  happyoukai:{name:"発表会", accent:"#8e6fd8", tape:"rgba(142,111,216,.4)",
+  happyoukai:{name:"発表会", accent:"#8e6fd8", tape:"rgba(142,111,216,.4)", art:"art/usagi_happyou.webp",
     bg:"linear-gradient(165deg,#e8e0ff 0%,#f6efff 50%,#ffe9f2 100%)", flags:["#8e6fd8","#f76e92","#f2b84b","#6fa8dc"], conf:["#8e6fd8","#f76e92","#f2b84b"]},
-  sotsuen:{name:"卒園式", accent:"#e0699a", tape:"rgba(224,105,154,.4)",
+  sotsuen:{name:"卒園式", accent:"#e0699a", tape:"rgba(224,105,154,.4)", art:"art/usagi_sotsuen.webp",
     bg:"linear-gradient(165deg,#ffe9f0 0%,#fff6f0 55%,#e7f6ea 100%)", flags:["#e0699a","#f2b84b","#7fd8be","#f76e92"], conf:["#f9c8d8","#e0699a","#7fd8be"]}
 };
 const MOODS = {
@@ -347,10 +350,10 @@ function evPaperHtml(k){
       ${e.status==="approved"?'<span class="stamp stamp-sm">済</span>':""}`;
     label = e.status==="approved"? `${mon}・できあがり` : e.status==="review"? `${mon}・園長先生の確認まち` : `${mon}・つくりかけ`;
   } else if(e){
-    inner = `<span class="blank"><span class="bmon">${mon}</span><span class="bname">${d.name}</span><span class="bcta">つづきから</span></span>`;
+    inner = `<span class="blank"><img src="${d.art}" alt=""><span class="bmon">${mon}</span><span class="bname">${d.name}</span><span class="bcta">つづきから</span></span>`;
     label = `${mon}・つくりかけ`;
   } else {
-    inner = `<span class="blank"><span class="bmon">${mon}</span><span class="bname">${d.name}</span><span class="bcta">つくる</span></span>`;
+    inner = `<span class="blank"><img src="${d.art}" alt=""><span class="bmon">${mon}</span><span class="bname">${d.name}</span><span class="bcta">つくる</span></span>`;
     label = `${mon}・まだ`;
   }
   return `<div class="wallitem"><button class="evpaper" style="--r:${rot}" onclick="${e?`resume(${e.id})`:`startNewWith('${k}')`}">
@@ -363,7 +366,7 @@ function home(){
   P.innerHTML=`${bar({title:"ぎょうじばこ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
   <div class="screen">
     ${fusenHtml()}
-    ${S.events.length===0 && !S.wip?`<div class="emptywall">${bako(70)}
+    ${S.events.length===0 && !S.wip?`<div class="emptywall"><img class="mascot mascot-img" src="art/usagi_base.webp" alt="">
       <div class="m">紙をえらんで、はじめてのおたよりを作ってみましょう。</div></div>`:""}
     <div class="wall">${YEAR_ORDER.map(k=>evPaperHtml(k)).join("")}</div>
   </div>
@@ -394,7 +397,7 @@ function pick(){
     ${Object.entries(EV).map(([k,d])=>`
       <div class="wallitem"><button class="evpaper" style="--r:${{natsumatsuri:"-1deg",undoukai:"1.2deg",happyoukai:"-0.8deg",sotsuen:"0.9deg"}[k]}" onclick="cur.type='${k}';go('when')">
         <span class="tape" style="background:${d.tape}"></span>
-        <span class="blank"><span class="bmon">${MONTH[k]}</span><span class="bname">${d.name}</span></span>
+        <span class="blank"><img src="${d.art}" alt=""><span class="bmon">${MONTH[k]}</span><span class="bname">${d.name}</span></span>
       </button></div>`).join("")}
   </div></div>`;
 }
@@ -443,7 +446,7 @@ function making(){
   const n=matCount(cur.type);
   P.innerHTML=`${bar({title:d.name})}
   <div class="screen"><div class="loading">
-    ${bako(76)}
+    <img class="mascot mascot-img" src="${d.art}" alt="">
     <div class="msg" id="loadMsg">${n?`去年の資料（${n}枚）を確認しています`:`去年の${d.name}の資料を確認しています`}</div>
   </div></div>`;
   setTimeout(()=>{ const m=document.getElementById("loadMsg"); if(m)m.textContent="今年の日付に直しています"; },800);
@@ -542,6 +545,7 @@ function posterHtml(ev){
     ${garlandSvg(d.flags)}${confettiDots(d.conf)}
     ${frames}
     <div class="body" style="${e.photos>0?"padding-top:2%":""}">
+      <img class="p-art" src="${d.art}" alt="">
       <h3 style="${dark?"color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.15);":`color:${d.accent};text-shadow:0 3px 0 rgba(255,255,255,.7);`}">${d.name}</h3>
       <div class="p-datebox"><div class="p-date" style="color:${d.accent}">${jpDate(e.date)}</div>
         <div class="p-time">${e.time} スタート</div></div>
@@ -719,7 +723,7 @@ function delMat(type,i){ S.materials[type].splice(i,1); save(); materials(); }
 function lockScreen(msg){
   P.innerHTML=`${bar({title:"ぎょうじばこ"})}
   <div class="screen"><div class="lockwrap">
-    ${bako(76)}
+    <img class="mascot-img" src="art/usagi_base.webp" alt="">
     <div class="lockt">ロックがかかっています</div>
     <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="ロック番号" autocomplete="off">
     <button class="btn-p" onclick="tryUnlock()">あける</button>
