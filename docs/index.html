@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<meta name="theme-color" content="#2c3140">
+<meta name="theme-color" content="#edf4f5">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -18,10 +18,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --wall:#2c3140; --walldeep:#20242e; --paper:#fffdf9; --ink:#4a4238; --sub:#9a8d7d; --line:#e9e1d4;
-    --onwall:#e8e2d6; --onwallsub:#a7adba;
+    --wall:#edf4f5; --walldeep:#e3ecee; --paper:#ffffff; --ink:#3d4a52; --sub:#94a3ab; --line:#eaeeef;
+    --onwall:#3d4a52; --onwallsub:#7d8c94;
     --accent:#e26e88; --shu:#d64545; --green:#3fa878; --danger:#d9534f;
-    --pshadow:0 2px 6px rgba(0,0,0,.4), 0 14px 30px rgba(0,0,0,.3);
+    --pshadow:0 1px 3px rgba(50,70,80,.10), 0 8px 20px rgba(50,70,80,.08);
   }
   *{margin:0;padding:0;box-sizing:border-box;
     font-family:-apple-system,"Hiragino Kaku Gothic ProN","Hiragino Sans","Noto Sans JP",Meiryo,sans-serif;
@@ -40,11 +40,11 @@
   .bar .title{flex:1;text-align:center;font-size:16px;font-weight:700;letter-spacing:1px;color:var(--onwall);
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .bar .side{width:44px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--onwallsub);font-weight:700;}
-  .bar .gearb{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#8b93a5;}
+  .bar .gearb{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#90a0a8;}
   .bar .gearb svg{width:22px;height:22px;}
   .stepdots{display:flex;gap:5px;align-items:center;}
-  .stepdots .sd{width:7px;height:7px;border-radius:50%;background:#4a5163;}
-  .stepdots .sd.done{background:rgba(226,110,136,.4);}
+  .stepdots .sd{width:7px;height:7px;border-radius:50%;background:#d3dde1;}
+  .stepdots .sd.done{background:rgba(226,110,136,.35);}
   .stepdots .sd.on{background:var(--accent);}
 
   /* ---- 紙 ---- */
@@ -73,7 +73,7 @@
   .evpaper .pin-thumb{width:390px;transform:scale(0.4359);transform-origin:top left;display:block;pointer-events:none;}
   .evpaper .blank{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:3px;padding:12px;}
   .evpaper .blank img{width:104px;height:104px;object-fit:contain;margin-bottom:2px;}
-  .evpaper .bmon{font-family:"Zen Maru Gothic",sans-serif;font-size:16px;font-weight:900;color:#c9beac;}
+  .evpaper .bmon{font-family:"Zen Maru Gothic",sans-serif;font-size:16px;font-weight:900;color:#b9c8ce;}
   .evpaper .bname{font-size:15px;font-weight:700;color:var(--ink);}
   .evpaper .bcta{font-size:13px;font-weight:700;color:var(--accent);margin-top:6px;}
   .evpaper .stamp{position:absolute;right:8px;top:10px;}
@@ -112,7 +112,7 @@
   textarea{min-height:72px;line-height:1.7;resize:none;}
   input:focus,textarea:focus{outline:none;border-bottom-color:var(--accent);}
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
-  .chip{padding:9px 14px;border-radius:6px;background:#f2ecdf;font-size:14px;color:#7c7060;font-weight:700;font-variant-numeric:tabular-nums;}
+  .chip{padding:9px 14px;border-radius:6px;background:#eef3f5;font-size:14px;color:#6b7b83;font-weight:700;font-variant-numeric:tabular-nums;}
   .chip.sel{background:var(--accent);color:#fff;}
 
   .ctabar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:10;
@@ -122,7 +122,7 @@
     font-size:15px;font-weight:700;text-align:center;box-shadow:0 3px 10px rgba(226,110,136,.3);}
   .btn-p:disabled{background:#d8cec2;box-shadow:none;}
   .btn-p:active{opacity:.85;}
-  .btn-o{display:block;width:100%;padding:13px;border-radius:8px;border:1.5px solid #4a5163;background:rgba(255,253,249,.05);
+  .btn-o{display:block;width:100%;padding:13px;border-radius:8px;border:1.5px solid #ccd8dc;background:#fff;
     font-size:14px;font-weight:700;text-align:center;color:var(--onwall);}
   .paperpanel .btn-o{border-color:var(--line);background:transparent;color:var(--ink);}
 
@@ -146,9 +146,9 @@
   .paperwrap{position:relative;}
   .paperwrap .stamp-md{position:absolute;top:12px;right:26px;z-index:2;}
   .editnote{font-size:12px;color:var(--onwallsub);padding:8px 20px 0;font-weight:700;}
-  .checkrow{display:flex;gap:8px;padding:8px 20px;font-size:14px;line-height:1.6;color:#c3c9d6;font-weight:700;}
-  .checkrow .m{flex:none;color:#6fd0a0;}
-  .checkrow.ng{color:#ff9b93;} .checkrow.ng .m{color:#ff9b93;}
+  .checkrow{display:flex;gap:8px;padding:8px 20px;font-size:14px;line-height:1.6;color:#5b6b73;font-weight:700;}
+  .checkrow .m{flex:none;color:var(--green);}
+  .checkrow.ng{color:var(--danger);} .checkrow.ng .m{color:var(--danger);}
 
   /* ---- ポスター ---- */
   .posterbox{padding:0 16px;position:relative;}
@@ -179,7 +179,7 @@
     padding:6px 16px calc(20px + env(safe-area-inset-bottom));animation:sheetUp .22s ease-out both;
     box-shadow:0 -6px 24px rgba(0,0,0,.4);}
   @keyframes sheetUp{from{transform:translateY(40%)}to{transform:none}}
-  .sheet .grab{width:36px;height:4px;border-radius:2px;background:#d5cabb;margin:8px auto 6px;}
+  .sheet .grab{width:36px;height:4px;border-radius:2px;background:#ccd8dc;margin:8px auto 6px;}
   .sheet .sh{font-weight:700;font-size:15px;padding:8px 4px 6px;color:var(--ink);}
 
   /* ---- principal / done ---- */
@@ -189,17 +189,17 @@
   .donehead .t{font-size:17px;font-weight:700;margin-top:12px;color:var(--onwall);}
   .donehead .time{font-size:13px;color:var(--onwallsub);margin-top:4px;font-weight:700;}
   .dcf{position:absolute;border-radius:50%;opacity:.8;}
-  .npbox{margin:8px 16px 0;border:1.5px dashed #4a5163;border-radius:6px;padding:14px;text-align:center;background:rgba(255,253,249,.04);}
-  .npbox .code{font-size:24px;font-weight:700;letter-spacing:3px;color:#8fb8ff;font-variant-numeric:tabular-nums;}
+  .npbox{margin:8px 16px 0;border:1.5px dashed #b9d2de;border-radius:6px;padding:14px;text-align:center;background:#fff;}
+  .npbox .code{font-size:24px;font-weight:700;letter-spacing:3px;color:#4a90d9;font-variant-numeric:tabular-nums;}
   .npbox .l{font-size:12px;color:var(--onwallsub);font-weight:700;}
 
   .lockwrap{display:flex;flex-direction:column;align-items:center;gap:16px;padding:70px 20px;}
   .lockt{font-weight:700;color:var(--onwall);}
-  .lockerr{color:#ff9b93;font-size:13px;font-weight:700;}
-  .lockwrap input{text-align:center;font-size:22px;letter-spacing:6px;max-width:220px;color:var(--onwall);border-bottom-color:#4a5163;}
+  .lockerr{color:var(--danger);font-size:13px;font-weight:700;}
+  .lockwrap input{text-align:center;font-size:22px;letter-spacing:6px;max-width:220px;color:var(--onwall);border-bottom-color:#ccd8dc;}
   .lockwrap .btn-p{max-width:220px;width:100%;}
 
-  .foot{margin-top:32px;padding:0 20px 20px;font-size:12px;line-height:2;color:#6f7686;text-align:center;font-weight:700;}
+  .foot{margin-top:32px;padding:0 20px 20px;font-size:12px;line-height:2;color:#a3b1b7;text-align:center;font-weight:700;}
   .emptywall{text-align:center;padding:26px 16px 0;}
   .emptywall .m{font-size:13px;color:var(--onwallsub);margin-top:10px;line-height:1.9;font-weight:700;}
 
@@ -232,7 +232,7 @@
 
 <script>
 /* ============ data ============ */
-const APP_VER = "2026.8.20-a";
+const APP_VER = "2026.8.20-b";
 const EV = {
   undoukai:{name:"運動会", accent:"#f2762e", tape:"rgba(242,118,46,.45)", art:"art/usagi_undoukai.webp",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
