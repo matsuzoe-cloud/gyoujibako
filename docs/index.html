@@ -90,7 +90,7 @@
   @keyframes stampin{from{transform:rotate(-24deg) scale(1.9);opacity:0}to{transform:rotate(-8deg) scale(1);opacity:1}}
   .stampbtn{width:96px;height:96px;border-radius:50%;border:3px solid var(--shu);color:var(--shu);
     background:var(--paper);font-size:36px;font-weight:700;display:flex;align-items:center;justify-content:center;
-    transform:rotate(-8deg);box-shadow:0 2px 8px rgba(214,69,69,.2);margin:0 auto;}
+    transform:rotate(-8deg);margin:0 auto;}
   .stampbtn:active{transform:rotate(-8deg) scale(.9);}
   .stampcap{text-align:center;font-size:13px;color:var(--sub);margin-top:10px;font-weight:700;}
 
@@ -119,8 +119,8 @@
     background:linear-gradient(transparent, var(--wall) 45%);
     padding:18px 16px calc(14px + env(safe-area-inset-bottom));}
   .btn-p{display:block;width:100%;padding:14px;border-radius:8px;background:var(--accent);color:#fff;
-    font-size:15px;font-weight:700;text-align:center;box-shadow:0 3px 10px rgba(226,110,136,.3);}
-  .btn-p:disabled{background:#d8cec2;box-shadow:none;}
+    font-size:15px;font-weight:700;text-align:center;}
+  .btn-p:disabled{background:#cfd9dd;}
   .btn-p:active{opacity:.85;}
   .btn-o{display:block;width:100%;padding:13px;border-radius:8px;border:1.5px solid #ccd8dc;background:#fff;
     font-size:14px;font-weight:700;text-align:center;color:var(--onwall);}
@@ -128,7 +128,7 @@
 
   .fab{position:fixed;bottom:26px;right:18px;width:58px;height:58px;border-radius:50%;
     background:var(--accent);color:#fff;font-size:27px;font-weight:700;z-index:15;
-    box-shadow:0 5px 16px rgba(226,110,136,.5);display:flex;align-items:center;justify-content:center;}
+    display:flex;align-items:center;justify-content:center;}
   .fab:active{transform:scale(.93);}
   @media(min-width:431px){.fab{right:calc(50vw - 197px);}}
   @media(min-width:880px){.fab{right:calc(50vw - 412px);}}
@@ -200,6 +200,11 @@
   .lockwrap .btn-p{max-width:220px;width:100%;}
 
   .foot{margin-top:32px;padding:0 20px 20px;font-size:12px;line-height:2;color:#a3b1b7;text-align:center;font-weight:700;}
+  .rolestamp{width:80px;height:80px;border-radius:50%;border:3px solid var(--shu);color:var(--shu);
+    display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;
+    transform:rotate(-8deg);margin:0 auto 16px;flex:none;}
+  .rolewrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:26px 20px 10px;}
+  .rolet{font-size:17px;font-weight:700;color:var(--onwall);}
   .emptywall{text-align:center;padding:26px 16px 0;}
   .emptywall .m{font-size:13px;color:var(--onwallsub);margin-top:10px;line-height:1.9;font-weight:700;}
 
@@ -232,7 +237,7 @@
 
 <script>
 /* ============ data ============ */
-const APP_VER = "2026.8.20-b";
+const APP_VER = "2026.8.20-c";
 const EV = {
   undoukai:{name:"運動会", accent:"#f2762e", tape:"rgba(242,118,46,.45)", art:"art/usagi_undoukai.webp",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
@@ -254,7 +259,7 @@ const MONTH={natsumatsuri:"7月",undoukai:"10月",happyoukai:"12月",sotsuen:"3�
 
 let S = null;
 function load(){ try{ const d=JSON.parse(localStorage.getItem("gyoujibako2")); if(d&&d.garden!==undefined) return d; }catch(e){}
-  return {garden:"", classes:"", ng:"必ず,絶対,がんばれ", principle:"", events:[], seq:1, wip:null, materials:{}}; }
+  return {garden:"", classes:"", ng:"必ず,絶対,がんばれ", principle:"", events:[], seq:1, wip:null, materials:{}, role:null}; }
 
 /* ---- 暗号化保存(アプリロック) ---- */
 const ENC_KEY="gyoujibako2enc", PLAIN_KEY="gyoujibako2";
@@ -309,6 +314,33 @@ function bako(size){ return `<svg class="mascot" width="${size}" height="${size}
 </svg>`; }
 function stepDots(n){ return `<div class="side"><div class="stepdots">
   ${[1,2,3,4].map(i=>`<span class="sd ${i<n?"done":i===n?"on":""}"></span>`).join("")}</div></div>`; }
+/* ============ 役割（先生／園長） ============ */
+function isHead(){ return S.role==="head"; }
+function roleName(){ return isHead()? "園長先生":"先生"; }
+function chooseRole(){
+  P.innerHTML=`${bar({title:"ぎょうじばこ"})}
+  <div class="screen">
+    <div class="rolewrap">
+      <img class="mascot-img" src="art/usagi_base.webp" alt="">
+      <div class="rolet">どちらでお使いですか？</div>
+    </div>
+    <div class="wall" style="padding-top:6px">
+      <div class="wallitem"><button class="evpaper" style="--r:-1deg" onclick="setRole('staff')">
+        <span class="tape" style="background:rgba(226,110,136,.4)"></span>
+        <span class="blank"><img src="art/usagi_base.webp" alt="">
+          <span class="bname">先生</span><span class="bcta">おたよりを つくる</span></span>
+      </button></div>
+      <div class="wallitem"><button class="evpaper" style="--r:1.2deg" onclick="setRole('head')">
+        <span class="tape" style="background:rgba(214,69,69,.35)"></span>
+        <span class="blank"><span class="rolestamp">済</span>
+          <span class="bname">園長先生</span><span class="bcta">見て、はんこを押す</span></span>
+      </button></div>
+    </div>
+    <div class="foot">あとから ⚙ の「使う人」でいつでも変えられます</div>
+  </div>`;
+}
+function setRole(r){ S.role=r; save(); toast(r==="head"?"園長先生の画面にしました":"先生の画面にしました"); home(); }
+
 function bar(opts){
   return `<div class="bar">
     ${opts.back?`<button class="backb" onclick="${opts.back}">‹</button>`:`<div style="width:44px"></div>`}
@@ -362,7 +394,9 @@ function evPaperHtml(k){
 }
 function home(){
   cur=null;
+  if(!S.role){ chooseRole(); return; }
   if(S.wip && !S.wip.type){ S.wip=null; save(); }
+  if(isHead()){ headHome(); return; }
   P.innerHTML=`${bar({title:"ぎょうじばこ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
   <div class="screen">
     ${fusenHtml()}
@@ -371,6 +405,38 @@ function home(){
     <div class="wall">${YEAR_ORDER.map(k=>evPaperHtml(k)).join("")}</div>
   </div>
   <button class="fab" onclick="startNew()" aria-label="行事のおたよりをつくる">＋</button>`;
+}
+
+/* ---- 園長先生のホーム：確認まちが主役 ---- */
+function headHome(){
+  const waiting=S.events.filter(e=>e.status==="review");
+  const doneList=S.events.filter(e=>e.status==="approved").sort((a,b)=>b.id-a.id);
+  P.innerHTML=`${bar({title:"ぎょうじばこ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
+  <div class="screen">
+    <div class="slabel">確認をおねがいします</div>
+    ${waiting.length? `<div class="wall" style="padding-top:6px">${waiting.map(e=>{
+        const d=EV[e.type];
+        return `<div class="wallitem"><button class="evpaper" style="--r:-1deg" onclick="openReview(${e.id})">
+          <span class="tape" style="background:${d.tape}"></span>
+          <span class="pin-thumb">${posterHtml(e)}</span>
+        </button><div class="plabel">${d.name}・見てください</div></div>`;}).join("")}</div>`
+      : `<div class="paperpanel"><div class="inner" style="text-align:center;padding:26px 18px">
+          <img class="mascot-img" src="art/usagi_base.webp" alt="" style="width:88px;height:88px">
+          <div style="font-size:14px;color:var(--sub);font-weight:700;margin-top:8px;line-height:1.9">
+            いまは確認まちのおたよりはありません。<br>先生から届くと、ここに出ます。</div>
+        </div></div>`}
+    ${doneList.length? `<div class="slabel">はんこを押したもの</div>
+      <div class="paperpanel"><div class="inner" style="padding:4px 18px"><div class="rows">
+      ${doneList.map(e=>`<button class="row" onclick="openReview(${e.id})">
+        <span class="txt">${EV[e.type].name}<span class="sub">${jpDate(e.date)}</span></span>
+        <span class="stamp stamp-sm">済</span><span class="chev">›</span></button>`).join("")}
+      </div></div></div>`:""}
+  </div>`;
+}
+function openReview(id){
+  cur=S.events.find(e=>e.id===id); if(!cur)return;
+  startedAt=Date.now()-(cur.minutes||0)*60000;
+  principal();
 }
 function startNew(){
   if(!S.garden){ go('settings'); toast("さいしょに園の名前を登録してください"); return; }
@@ -573,30 +639,42 @@ function mockLine(){ document.getElementById("sheet").remove();
   toast("LINEで送りました（デモ）"); principal(); }
 function principal(){
   const d=EV[cur.type];
-  P.innerHTML=`${bar({title:"確認"})}
+  const done = cur.status==="approved";
+  P.innerHTML=`${bar({back:isHead()?"home()":"result()", title:"確認"})}
   <div class="p-note">園長先生の画面です</div>
   <div class="screen bigtext"><div class="resultgrid"><div class="colL">
     <div class="slabel">${d.name}のおたより。内容をご確認ください。</div>
-    <div class="paper">${esc(cur.letter)}</div>
+    <div class="paperwrap">
+      ${done?'<div class="stamp stamp-md">済</div>':""}
+      <div class="paper">${esc(cur.letter)}</div>
+    </div>
   </div><div class="colR">
     <div class="slabel">ポスター</div>
     <div class="posterbox">${posterHtml()}</div>
   </div></div>
-    <div style="padding:26px 16px 8px">
+    ${done? `<div style="padding:22px 16px 8px;text-align:center">
+        <div class="stampcap" style="margin:0 0 14px">はんこを押しました。おつかれさまでした。</div>
+        <button class="btn-o" onclick="printOut('letter')">おたよりを印刷</button>
+      </div>`
+     : `<div style="padding:26px 16px 8px">
       <button class="stampbtn" onclick="approve()">済</button>
       <div class="stampcap">よければ、はんこを押してください</div>
     </div>
-    <div style="padding:6px 16px 20px"><button class="btn-o" onclick="askFix()">直してほしいところがある</button></div>
+    <div style="padding:6px 16px 20px"><button class="btn-o" onclick="askFix()">直してほしいところがある</button></div>`}
   </div>`;
 }
 function approve(){ cur.status="approved";
   cur.minutes=Math.max(1,Math.round((Date.now()-startedAt)/60000));
-  save(); showDone(); }
+  save();
+  if(isHead()){ toast("はんこを押しました"); principal(); return; }
+  showDone(); }
 function askFix(){
   const c=prompt("直してほしいところを、ひとこと どうぞ");
   if(c===null) return;
   cur.comment=c||"もう一度見てください"; cur.status="draft"; save();
-  toast("先生に返しました"); result(); }
+  toast("先生に返しました");
+  if(isHead()){ home(); return; }
+  result(); }
 
 /* ============ done ============ */
 function showDone(){
@@ -640,6 +718,12 @@ function settings(){
     <label class="f">園で大切にしていること</label>
     <textarea id="s_principle" placeholder="のびのびと、じぶんらしく。">${esc(S.principle)}</textarea>
   </div></div>
+  <div class="slabel">使う人</div>
+  <div class="paperpanel"><div class="inner" style="padding:4px 18px"><div class="rows">
+    <button class="row" onclick="switchRole()">
+      <span class="txt">いまは「${roleName()}」の画面です<span class="sub">${isHead()?"確認とはんこの画面":"おたよりを作る画面"}／タップで切り替え</span></span>
+      <span class="chev">›</span></button>
+  </div></div></div>
   <div class="slabel">去年の資料</div>
   <div class="paperpanel"><div class="inner" style="padding:4px 18px"><div class="rows">
     <button class="row" onclick="go('materials')">
@@ -663,6 +747,7 @@ function settings(){
   </div>
   <div class="ctabar"><button class="btn-p" onclick="saveSettings()">保存</button></div>`;
 }
+function switchRole(){ cur=null; S.role=null; save(); chooseRole(); }
 async function doEnableLock(){
   const pin=document.getElementById("s_pin").value.trim();
   if(!/^\d{4,8}$/.test(pin)){ toast("4〜8桁の数字にしてください"); return; }
