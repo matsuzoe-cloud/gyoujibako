@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>ぎょうじばこ</title>
 <meta name="robots" content="noindex, nofollow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#edf4f5">
 <link rel="manifest" href="manifest.json">
@@ -237,7 +237,7 @@
 
 <script>
 /* ============ data ============ */
-const APP_VER = "2026.8.21-a";
+const APP_VER = "2026.8.31-ai";
 const EV = {
   undoukai:{name:"運動会", accent:"#f2762e", tape:"rgba(242,118,46,.45)", art:"art/usagi_undoukai.webp",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
@@ -507,20 +507,52 @@ function photos(){
 }
 
 /* ============ making ============ */
-function making(){
+async function making(){
   const d=EV[cur.type];
-  const n=matCount(cur.type);
+  const mats=((S.materials||{})[cur.type]||[]).slice(0,3);
   P.innerHTML=`${bar({title:d.name})}
   <div class="screen"><div class="loading">
     <img class="mascot mascot-img" src="${d.art}" alt="">
-    <div class="msg" id="loadMsg">${n?`去年の資料（${n}枚）を確認しています`:`去年の${d.name}の資料を確認しています`}</div>
+    <div class="msg" id="loadMsg">${mats.length?`去年の資料（${mats.length}枚）を読んでいます`:`${d.name}のおたよりを書いています`}</div>
   </div></div>`;
-  setTimeout(()=>{ const m=document.getElementById("loadMsg"); if(m)m.textContent="今年の日付に直しています"; },800);
-  setTimeout(()=>{ const m=document.getElementById("loadMsg"); if(m)m.textContent="ことばを見直しています"; },1500);
-  setTimeout(()=>{ cur.letter=buildLetter();
-    if(!S.events.find(e=>e.id===cur.id)) S.events.push(cur);
-    cur.status="draft"; S.wip=null; save(); result(); },2100);
+  const t1=setTimeout(()=>{ const m=document.getElementById("loadMsg"); if(m)m.textContent="園の言い方に合わせています"; },1400);
+  const t2=setTimeout(()=>{ const m=document.getElementById("loadMsg"); if(m)m.textContent="ことばを見直しています"; },3200);
+  const started=Date.now();
+  let ai=null;
+  try{ ai=await aiDraft(mats); }catch(e){ ai=null; }
+  const wait=Math.max(0, 1400-(Date.now()-started));
+  await new Promise(r=>setTimeout(r, wait));
+  clearTimeout(t1); clearTimeout(t2);
+  cur.letter = ai ? ai.letter : buildLetter();
+  cur.carried = ai ? (ai.carried_over||[]) : [];
+  cur.byAI = !!ai;
+  cur.sentMats = ai ? mats.length : 0;
+  if(!S.events.find(e=>e.id===cur.id)) S.events.push(cur);
+  cur.status="draft"; S.wip=null; save(); result();
 }
+
+/* おたよりの下書きをサーバに頼む。つながらなければ null を返し、これまでの定型文に戻る */
+async function aiDraft(mats){
+  const body={
+    garden:{name:S.garden, classes:S.classes, principle:S.principle, ng:S.ng},
+    event:{name:EV[cur.type].name, date:jpDate(cur.date), time:cur.time,
+           place:cur.place, mood:(MOODS[cur.mood]||{}).label||"",
+           classes_note:S.classes? S.classes+" ぐみ":""},
+    materials:mats
+  };
+  const ctrl=new AbortController();
+  const to=setTimeout(()=>ctrl.abort(), 60000);
+  try{
+    const r=await fetch("api/draft",{method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(body), signal:ctrl.signal});
+    if(!r.ok) return null;
+    const j=await r.json();
+    return (j && j.letter) ? j : null;
+  }catch(e){ return null; }
+  finally{ clearTimeout(to); }
+}
+
 function buildLetter(){
   const d=EV[cur.type];
   const season={undoukai:"秋晴れが気持ちよい季節になりました",
@@ -559,9 +591,17 @@ function checks(){
   out.push(hit.length? {ok:false,label:`「${hit.join("、")}」が入っています。園では使わない言葉です`}
                      : {ok:true, label:`園で使わない言葉は入っていません`});
   out.push({ok:cur.letter.includes(cur.place), label: cur.letter.includes(cur.place)?"場所の書きもれはありません":"場所が書かれていません"});
-  const n=matCount(cur.type);
-  if(n) out.push({ok:true, label:`去年の資料 ${n}枚をもとにしています`});
-  out.push({ok:true, label:"写真は外部に送っていません"});
+  if(cur.byAI){
+    out.push({ok:true, label: cur.sentMats? `去年の資料 ${cur.sentMats}枚を読んで書きました` : "AIが下書きしました"});
+    (cur.carried||[]).forEach(c=>{
+      const it=(c&&c.item)||""; const ask=(c&&c.ask)||"今年も同じか確かめてください";
+      if(it) out.push({ok:false, label:`${it} … ${ask}`});
+    });
+  }else{
+    const n=matCount(cur.type);
+    if(n) out.push({ok:true, label:`去年の資料 ${n}枚があります`});
+  }
+  out.push({ok:true, label:"ポスターの写真わくに入れたお写真は、AIに渡していません"});
   return out;
 }
 
@@ -739,6 +779,10 @@ function settings(){
     <div style="padding:12px 0 0"><button class="btn-o" onclick="doEnableLock()">ロックをかける（中身を暗号化して保存）</button></div>
     <div style="font-size:12px;color:var(--sub);padding-top:8px;line-height:1.9;font-weight:700">開くたびに番号が必要になります。5分さわらないと自動でロックされます。<br>⚠ 番号を忘れると中身は開けません。</div>
   </div></div>`}
+  <div class="slabel">AIのつながり</div>
+  <div class="paperpanel"><div class="inner" style="padding:14px 18px">
+    <div id="aiStat" style="font-size:13px;font-weight:700;color:var(--sub);line-height:1.8">調べています…</div>
+  </div></div>
   <div style="padding:4px 16px 0"><button class="btn-o" onclick="fillSample()">おためしデータを入れる</button></div>
   <div style="padding:10px 16px 0"><a class="btn-o" href="demo.html" style="display:block;text-decoration:none">画面のご案内をみる</a></div>
   <div class="foot">とちゅうで呼ばれても、つづきから再開できます<br>
@@ -747,8 +791,18 @@ function settings(){
     ばん ${APP_VER}</div>
   </div>
   <div class="ctabar"><button class="btn-p" onclick="saveSettings()">保存</button></div>`;
+  checkAI();
 }
 function switchRole(){ cur=null; S.role=null; save(); chooseRole(); }
+function checkAI(){
+  const el=document.getElementById("aiStat"); if(!el) return;
+  fetch("api/draft").then(r=>r.ok?r.json():null).then(j=>{
+    const e=document.getElementById("aiStat"); if(!e) return;
+    e.textContent = (j&&j.ai)? "つながっています。去年の資料を読んで下書きします。"
+                             : "まだつながっていません。決まった形の文章で下書きします。";
+  }).catch(()=>{ const e=document.getElementById("aiStat");
+    if(e) e.textContent="まだつながっていません。決まった形の文章で下書きします。"; });
+}
 async function doEnableLock(){
   const pin=document.getElementById("s_pin").value.trim();
   if(!/^\d{4,8}$/.test(pin)){ toast("4〜8桁の数字にしてください"); return; }
@@ -767,7 +821,7 @@ function saveSettings(){
 function materials(){
   P.innerHTML=`${bar({back:"settings()", title:"去年の資料"})}
   <div class="screen">
-    <div class="slabel" style="line-height:1.9">去年のおたよりやポスターを、写真に撮って入れておく場所です。ここに入れたものをもとに、今年の下書きを作ります。写真は この端末の中にだけ保存されます。</div>
+    <div class="slabel" style="line-height:1.9">去年のおたよりやポスターを、写真に撮って入れておく場所です。ここに入れたものをもとに、今年の下書きを作ります。写真は この端末の中にだけ保存されます。<br>下書きを作るとき、この写真はAIに読ませます。園児の顔が写っているものは入れないでください。</div>
     ${YEAR_ORDER.map(k=>{
       const d=EV[k];
       const list=(S.materials||{})[k]||[];
