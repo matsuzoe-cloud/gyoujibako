@@ -526,7 +526,7 @@ async function making(){
   cur.letter = ai ? ai.letter : buildLetter();
   cur.carried = ai ? (ai.carried_over||[]) : [];
   cur.byAI = !!ai;
-  cur.sentMats = ai ? mats.length : 0;
+  cur.sentMats = ai ? (typeof ai.used_images==="number" ? ai.used_images : mats.length) : 0;
   if(!S.events.find(e=>e.id===cur.id)) S.events.push(cur);
   cur.status="draft"; S.wip=null; save(); result();
 }
@@ -583,15 +583,59 @@ ${close}
 
 ${S.garden}`;
 }
+/* 使わない言葉は、形を変えたものも見つける */
+function ngHits(text){
+  const base=(S.ng||"").split(",").map(x=>x.trim()).filter(Boolean);
+  const tails=["れ","って","ってね","ろう","ります","りましょう","る"];
+  const hits=[];
+  const add=v=>{ if(v && text.includes(v) && !hits.includes(v)) hits.push(v); };
+  base.forEach(w=>{
+    add(w);
+    const stem=w.replace(/(れ|って|ろう|る|う)$/,"");
+    if(stem && stem!==w) tails.forEach(t=>add(stem+t));
+  });
+  return hits;
+}
+/* 本文に書かせてはいけない「約束ごと」が混ざっていないか */
+const YAKUSOKU=[
+  [/持ち\s*もの|持ち物|持参/, "持ちもの"],
+  [/雨(のとき|の場合|天)/, "雨のときの決まり"],
+  [/駐車/, "駐車場"],
+  [/集合(時間|時刻)/, "集合時間"],
+  [/締切|しめきり|期限/, "申し込みの期限"],
+  [/[0-9０-９]+\s*円/, "金額"],
+];
+function yakusokuHits(text){
+  return YAKUSOKU.filter(([re])=>re.test(text)).map(([,name])=>name);
+}
 function checks(){
   const out=[];
-  out.push({ok:true, label:`${jpDate(cur.date)}。曜日は合っています`});
-  const ngs=(S.ng||"").split(",").map(s=>s.trim()).filter(Boolean);
-  const hit=ngs.filter(w=>cur.letter.includes(w));
+
+  // 曜日：本文に書かれた曜日が、その日付と合っているか実際に見る
+  const right=jpDate(cur.date);
+  const wrong=(cur.letter.match(/（[日月火水木金土]）/g)||[])
+      .filter(x=>!right.endsWith(x));
+  out.push(wrong.length
+    ? {ok:false, label:`曜日が合っていません。正しくは ${right} です`}
+    : {ok:true,  label:`${right}。曜日は合っています`});
+
+  // 使わない言葉（形を変えたものも）
+  const hit=ngHits(cur.letter);
   out.push(hit.length? {ok:false,label:`「${hit.join("、")}」が入っています。園では使わない言葉です`}
                      : {ok:true, label:`園で使わない言葉は入っていません`});
-  out.push({ok:cur.letter.includes(cur.place), label: cur.letter.includes(cur.place)?"場所の書きもれはありません":"場所が書かれていません"});
+
+  // 場所：入力が空なら、そもそも書けていない
+  if(!(cur.place||"").trim()){
+    out.push({ok:false, label:"場所が決まっていません"});
+  }else{
+    out.push({ok:cur.letter.includes(cur.place),
+      label: cur.letter.includes(cur.place)?"場所の書きもれはありません":"場所が書かれていません"});
+  }
+
   if(cur.byAI){
+    const y=yakusokuHits(cur.letter);
+    if(y.length) out.push({ok:false,
+      label:`${y.join("・")}のことが本文に入っています。今年も同じか、必ず確かめてください`});
     out.push({ok:true, label: cur.sentMats? `去年の資料 ${cur.sentMats}枚を読んで書きました` : "AIが下書きしました"});
     (cur.carried||[]).forEach(c=>{
       const it=(c&&c.item)||""; const ask=(c&&c.ask)||"今年も同じか確かめてください";
@@ -617,7 +661,7 @@ function result(){
     </div>
 
     <div class="slabel">見直し</div>
-    ${checks().map(c=>`<div class="checkrow ${c.ok?"":"ng"}"><span class="m">${c.ok?"✓":"！"}</span><span>${c.label}</span></div>`).join("")}
+    ${checks().map(c=>`<div class="checkrow ${c.ok?"":"ng"}"><span class="m">${c.ok?"✓":"！"}</span><span>${esc(c.label)}</span></div>`).join("")}
 
     ${cur.comment?`<div class="slabel">園長先生から</div>
       <div class="paper" style="background:#fff8dd">${esc(cur.comment)}</div>`:""}
