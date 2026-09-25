@@ -238,15 +238,15 @@
 
 <script>
 /* ============ data ============ */
-const APP_VER = "2026.9.25-hiyohiyo";
+const APP_VER = "2026.9.25-hiyo";
 const EV = {
-  undoukai:{name:"運動会", accent:"#f2762e", tape:"rgba(242,118,46,.45)", art:"art/usagi_undoukai.webp",
+  undoukai:{name:"運動会", accent:"#f2762e", tape:"rgba(242,118,46,.45)", art:"art/hiyo_undoukai.webp",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
-  natsumatsuri:{name:"夏祭り", accent:"#e05c6e", tape:"rgba(224,92,110,.42)", art:"art/usagi_natsu.webp",
+  natsumatsuri:{name:"夏祭り", accent:"#e05c6e", tape:"rgba(224,92,110,.42)", art:"art/hiyo_natsu.webp",
     bg:"linear-gradient(165deg,#2c3e6b 0%,#7c5ba6 55%,#ff9d76 100%)", flags:["#ffd66e","#ff8fab","#7fd8be","#ffb347"], conf:["#ffd66e","#ff8fab","#ffffff"]},
-  happyoukai:{name:"発表会", accent:"#8e6fd8", tape:"rgba(142,111,216,.4)", art:"art/usagi_happyou.webp",
+  happyoukai:{name:"発表会", accent:"#8e6fd8", tape:"rgba(142,111,216,.4)", art:"art/hiyo_happyou.webp",
     bg:"linear-gradient(165deg,#e8e0ff 0%,#f6efff 50%,#ffe9f2 100%)", flags:["#8e6fd8","#f76e92","#f2b84b","#6fa8dc"], conf:["#8e6fd8","#f76e92","#f2b84b"]},
-  sotsuen:{name:"卒園式", accent:"#e0699a", tape:"rgba(224,105,154,.4)", art:"art/usagi_sotsuen.webp",
+  sotsuen:{name:"卒園式", accent:"#e0699a", tape:"rgba(224,105,154,.4)", art:"art/hiyo_sotsuen.webp",
     bg:"linear-gradient(165deg,#ffe9f0 0%,#fff6f0 55%,#e7f6ea 100%)", flags:["#e0699a","#f2b84b","#7fd8be","#f76e92"], conf:["#f9c8d8","#e0699a","#7fd8be"]}
 };
 const MOODS = {
@@ -322,13 +322,13 @@ function chooseRole(){
   P.innerHTML=`${bar({title:"ヒヨヒヨ"})}
   <div class="screen">
     <div class="rolewrap">
-      <img class="mascot-img" src="art/usagi_base.webp" alt="">
+      <img class="mascot-img" src="art/hiyo_base.webp" alt="">
       <div class="rolet">どちらでお使いですか？</div>
     </div>
     <div class="wall" style="padding-top:6px">
       <div class="wallitem"><button class="evpaper" style="--r:-1deg" onclick="setRole('staff')">
         <span class="tape" style="background:rgba(226,110,136,.4)"></span>
-        <span class="blank"><img src="art/usagi_base.webp" alt="">
+        <span class="blank"><img src="art/hiyo_base.webp" alt="">
           <span class="bname">先生</span><span class="bcta">おたよりを つくる</span></span>
       </button></div>
       <div class="wallitem"><button class="evpaper" style="--r:1.2deg" onclick="setRole('head')">
@@ -401,7 +401,7 @@ function home(){
   P.innerHTML=`${bar({title:"ヒヨヒヨ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
   <div class="screen">
     ${fusenHtml()}
-    ${S.events.length===0 && !S.wip?`<div class="emptywall"><img class="mascot mascot-img" src="art/usagi_base.webp" alt="">
+    ${S.events.length===0 && !S.wip?`<div class="emptywall"><img class="mascot mascot-img" src="art/hiyo_base.webp" alt="">
       <div class="m">紙をえらんで、はじめてのおたよりを作ってみましょう。</div></div>`:""}
     <div class="wall">${YEAR_ORDER.map(k=>evPaperHtml(k)).join("")}</div>
   </div>
@@ -422,7 +422,7 @@ function headHome(){
           <span class="pin-thumb">${posterHtml(e)}</span>
         </button><div class="plabel">${d.name}・見てください</div></div>`;}).join("")}</div>`
       : `<div class="paperpanel"><div class="inner" style="text-align:center;padding:26px 18px">
-          <img class="mascot-img" src="art/usagi_base.webp" alt="" style="width:88px;height:88px">
+          <img class="mascot-img" src="art/hiyo_base.webp" alt="" style="width:88px;height:88px">
           <div style="font-size:14px;color:var(--sub);font-weight:700;margin-top:8px;line-height:1.9">
             いまは確認まちのおたよりはありません。<br>先生から届くと、ここに出ます。</div>
         </div></div>`}
@@ -910,7 +910,7 @@ function delMat(type,i){ S.materials[type].splice(i,1); save(); materials(); }
 function lockScreen(msg){
   P.innerHTML=`${bar({title:"ヒヨヒヨ"})}
   <div class="screen"><div class="lockwrap">
-    <img class="mascot-img" src="art/usagi_base.webp" alt="">
+    <img class="mascot-img" src="art/hiyo_base.webp" alt="">
     <div class="lockt">ロックがかかっています</div>
     <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="ロック番号" autocomplete="off">
     <button class="btn-p" onclick="tryUnlock()">あける</button>
