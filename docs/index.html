@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>ぎょうじばこ</title>
+<title>ヒヨヒヨ</title>
 <meta name="robots" content="noindex, nofollow">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src 'self'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'unsafe-inline'; img-src 'self' data:; manifest-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="ぎょうじばこ">
+<meta name="apple-mobile-web-app-title" content="ヒヨヒヨ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
 <style>
@@ -237,7 +237,7 @@
 
 <script>
 /* ============ data ============ */
-const APP_VER = "2026.9.25-legal";
+const APP_VER = "2026.9.25-hiyohiyo";
 const EV = {
   undoukai:{name:"運動会", accent:"#f2762e", tape:"rgba(242,118,46,.45)", art:"art/usagi_undoukai.webp",
     bg:"linear-gradient(165deg,#aee1ff 0%,#e8f6ff 45%,#fff3c4 100%)", flags:["#f2762e","#6fa8dc","#f2b84b","#4fb586"], conf:["#f2762e","#6fa8dc","#f2b84b"]},
@@ -318,7 +318,7 @@ function stepDots(n){ return `<div class="side"><div class="stepdots">
 function isHead(){ return S.role==="head"; }
 function roleName(){ return isHead()? "園長先生":"先生"; }
 function chooseRole(){
-  P.innerHTML=`${bar({title:"ぎょうじばこ"})}
+  P.innerHTML=`${bar({title:"ヒヨヒヨ"})}
   <div class="screen">
     <div class="rolewrap">
       <img class="mascot-img" src="art/usagi_base.webp" alt="">
@@ -397,7 +397,7 @@ function home(){
   if(!S.role){ chooseRole(); return; }
   if(S.wip && !S.wip.type){ S.wip=null; save(); }
   if(isHead()){ headHome(); return; }
-  P.innerHTML=`${bar({title:"ぎょうじばこ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
+  P.innerHTML=`${bar({title:"ヒヨヒヨ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
   <div class="screen">
     ${fusenHtml()}
     ${S.events.length===0 && !S.wip?`<div class="emptywall"><img class="mascot mascot-img" src="art/usagi_base.webp" alt="">
@@ -411,7 +411,7 @@ function home(){
 function headHome(){
   const waiting=S.events.filter(e=>e.status==="review");
   const doneList=S.events.filter(e=>e.status==="approved").sort((a,b)=>b.id-a.id);
-  P.innerHTML=`${bar({title:"ぎょうじばこ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
+  P.innerHTML=`${bar({title:"ヒヨヒヨ", right:`<button class="gearb" onclick="go('settings')">${GEAR}</button>`})}
   <div class="screen">
     <div class="slabel">確認をおねがいします</div>
     ${waiting.length? `<div class="wall" style="padding-top:6px">${waiting.map(e=>{
@@ -907,7 +907,7 @@ function delMat(type,i){ S.materials[type].splice(i,1); save(); materials(); }
 
 /* ============ lock ============ */
 function lockScreen(msg){
-  P.innerHTML=`${bar({title:"ぎょうじばこ"})}
+  P.innerHTML=`${bar({title:"ヒヨヒヨ"})}
   <div class="screen"><div class="lockwrap">
     <img class="mascot-img" src="art/usagi_base.webp" alt="">
     <div class="lockt">ロックがかかっています</div>
